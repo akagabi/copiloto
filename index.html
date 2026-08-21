@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Copiloto</title>
-<meta name="theme-color" content="#121417">
+<meta name="theme-color" content="#111318">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon.png">
@@ -13,88 +13,122 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Archivo:wght@400;500;600;700&display=swap">
 <style>
   :root {
-    --bg:#F2F3F1; --surface:#FFFFFF; --surface-2:#E7E9E6;
-    --ink:#16181B; --ink-2:#4B5158; --ink-3:#7C838B; --line:#DADDD8;
-    --accent:#C43B2E; --gold:#B5821D; --blue:#2F5FA8; --teal:#00806B;
-    --chip-a:#C43B2E1A;
+    --bg:#F3F3F0; --surface:#FFFFFF; --surface-2:#E8E9E5; --raise:#FDFDFB;
+    --ink:#16181B; --ink-2:#4B5158; --ink-3:#7C838B; --line:#DBDDD8;
+    --accent:#C43B2E; --gold:#B5821D; --blue:#2F5FA8; --teal:#00806B; --purple:#6D4FA8;
+    --chip-a:#C43B2E14;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#121417; --surface:#1A1D21; --surface-2:#23272C;
-      --ink:#ECEDEE; --ink-2:#AAB1B8; --ink-3:#79818A; --line:#2E333A;
-      --accent:#E56A58; --gold:#B08129; --blue:#5E8FD8; --teal:#2AA187;
-      --chip-a:#E56A5826; }
+    :root { --bg:#111318; --surface:#1A1D22; --surface-2:#22262C; --raise:#20242B;
+      --ink:#ECEDEE; --ink-2:#ABB2B8; --ink-3:#7A828B; --line:#2C3138;
+      --accent:#E56A58; --gold:#C79437; --blue:#6E9BE0; --teal:#2FB093; --purple:#9B7FE8;
+      --chip-a:#E56A5820; }
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink);
     font-family:"Archivo",-apple-system,sans-serif; font-size:15px; line-height:1.5;
-    -webkit-font-smoothing:antialiased; padding-bottom:env(safe-area-inset-bottom); }
-  .wrap { max-width:680px; margin:0 auto; padding:22px 16px 80px; }
-  h1,h2,.hud-num { font-family:"Chakra Petch","Archivo",sans-serif; }
-  h1 { font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; margin:0; }
-  h1 small { display:block; font-size:11px; color:var(--ink-3); letter-spacing:.1em; font-weight:600; }
-  h2 { font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin:26px 0 10px; }
-  h2 span { color:var(--ink-3); font-size:11px; }
-  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
-  .hud-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-  .hud-num { font-size:22px; font-weight:700; color:var(--accent); white-space:nowrap; }
-  .hud-num small { display:block; font-size:9.5px; color:var(--ink-3); letter-spacing:.09em; text-transform:uppercase; text-align:right; }
-  .xp-row { display:flex; justify-content:space-between; align-items:baseline; margin-top:12px;
-    font-family:"Chakra Petch",sans-serif; font-size:12px; color:var(--ink-2); }
-  .xp-row b { color:var(--ink); font-size:15px; }
-  .xp-bar { margin-top:6px; height:13px; border-radius:7px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden; }
-  .xp-fill { height:100%; width:0%; transition:width .3s ease;
-    background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 70%,var(--bg)) 10px 20px); }
-  .xp-bar.week { height:8px; }
-  .xp-fill.week { background:var(--gold); }
-  #todayLine { margin-top:10px; font-size:13.5px; color:var(--ink-2); }
-  #todayLine b { color:var(--accent); }
-  .quest { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
-    border-radius:12px; padding:12px 14px; margin-bottom:8px; }
-  .quest label { flex:1; cursor:pointer; font-size:14px; color:var(--ink-2); }
-  .quest label b { color:var(--ink); font-weight:600; }
-  .quest .xp { font-family:"Chakra Petch",sans-serif; font-size:11px; color:var(--gold); font-weight:700; white-space:nowrap; }
-  .quest.p1 { border-left:4px solid var(--accent); }
-  .quest.p2 { border-left:4px solid var(--gold); }
-  .quest.p3 { border-left:4px solid var(--line); }
-  .quest.done label { text-decoration:line-through; opacity:.55; }
-  .quest { cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .06s ease; }
-  .quest:active { transform:scale(.985); background:var(--surface-2); }
-  .quest * { pointer-events:none; }
-  input[type=checkbox] { appearance:none; -webkit-appearance:none; flex:none; width:28px; height:28px;
-    border:2px solid var(--line); border-radius:9px; background:var(--surface-2); cursor:pointer; position:relative; margin:0; }
-  input[type=checkbox]:checked { background:var(--accent); border-color:var(--accent); }
-  input[type=checkbox]:checked::after { content:"✓"; color:var(--bg); font-weight:800; font-size:16px;
+    -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:640px; margin:0 auto; padding:18px 14px 96px; }
+  h1,h2,.big { font-family:"Chakra Petch","Archivo",sans-serif; }
+  h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-3); margin:26px 4px 10px; }
+  h2 b { color:var(--ink); }
+
+  .top { display:flex; justify-content:space-between; align-items:center; padding:2px 4px 12px; }
+  .top .date { font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:20px; text-transform:capitalize; }
+  .top .date small { display:block; font-size:11px; color:var(--ink-3); font-weight:600; letter-spacing:.06em; }
+  .pills { display:flex; gap:6px; }
+  .pill { font-family:"Chakra Petch",sans-serif; font-size:11.5px; font-weight:700; padding:6px 11px;
+    border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--ink-2); }
+  .pill b { color:var(--teal); }
+
+  .now-card { background:var(--surface); border:1.5px solid var(--accent); border-radius:20px;
+    padding:16px 18px; box-shadow:0 4px 24px -12px var(--accent); }
+  .now-tag { font-family:"Chakra Petch",sans-serif; font-size:10.5px; font-weight:700; letter-spacing:.14em;
+    color:var(--accent); }
+  .now-title { font-size:19px; font-weight:700; margin-top:2px; }
+  .next-row { display:flex; justify-content:space-between; align-items:baseline; margin-top:10px;
+    padding-top:10px; border-top:1px dashed var(--line); font-size:13.5px; color:var(--ink-2); }
+  .next-row .eta { font-family:"Chakra Petch",sans-serif; font-size:12px; color:var(--ink-3); font-weight:600; }
+
+  .capture { display:flex; gap:8px; margin-top:14px; }
+  .capture input[type=text] { flex:1; padding:13px 14px; border-radius:14px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:15px; min-width:0; }
+  .capture input[type=date] { width:46px; padding:0 4px; border-radius:14px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink-3); font-size:11px; }
+  .capture button { padding:0 18px; border-radius:14px; border:none; background:var(--accent); color:#fff;
+    font-size:22px; font-weight:700; cursor:pointer; }
+
+  .block { margin-top:18px; border-radius:20px; background:var(--surface); border:1px solid var(--line);
+    padding:14px 14px 8px; }
+  .block.now { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .block-h { display:flex; justify-content:space-between; align-items:baseline; padding:0 4px 10px; }
+  .block-h .t { font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:14px; }
+  .block-h .tag { font-family:"Chakra Petch",sans-serif; font-size:10px; font-weight:700; letter-spacing:.1em;
+    color:var(--accent); }
+  .item { display:flex; align-items:center; gap:11px; padding:11px 10px; border-radius:14px; margin-bottom:6px;
+    background:var(--raise); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .06s ease;
+    border-left:4px solid var(--line); }
+  .item:active { transform:scale(.985); }
+  .item * { pointer-events:none; }
+  .item .txt { flex:1; font-size:14.5px; color:var(--ink); }
+  .item .txt small { display:block; font-size:11px; color:var(--ink-3); }
+  .item .when { font-family:"Chakra Petch",sans-serif; font-size:11.5px; font-weight:700; color:var(--ink-3); white-space:nowrap; }
+  .item.done { opacity:.45; }
+  .item.done .txt { text-decoration:line-through; }
+  .item.d-treino { border-left-color:var(--gold); } .item.d-sono { border-left-color:var(--blue); }
+  .item.d-nutricao { border-left-color:var(--teal); } .item.d-mente { border-left-color:var(--purple); }
+  .item.d-saude { border-left-color:var(--accent); } .item.d-corpo { border-left-color:var(--teal); }
+  .item.d-evento { border-left-color:var(--accent); background:var(--chip-a); }
+  .item.d-vida { border-left-color:var(--purple); }
+  .tick { flex:none; width:27px; height:27px; border-radius:9px; border:2px solid var(--line);
+    background:var(--surface-2); position:relative; }
+  .item.done .tick, .tick.on { background:var(--teal); border-color:var(--teal); }
+  .item.done .tick::after, .tick.on::after { content:"✓"; color:var(--bg); font-weight:800; font-size:15px;
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
-  .teal input[type=checkbox]:checked { background:var(--teal); border-color:var(--teal); }
-  .blue input[type=checkbox]:checked { background:var(--blue); border-color:var(--blue); }
-  .gold input[type=checkbox]:checked { background:var(--gold); border-color:var(--gold); }
-  .weekgrid { overflow-x:auto; }
-  .weekgrid table { border-collapse:collapse; width:100%; min-width:460px; font-size:12px; }
-  .weekgrid th { font-family:"Chakra Petch",sans-serif; font-size:9.5px; color:var(--ink-3); text-transform:uppercase;
-    letter-spacing:.07em; padding:5px 3px; }
-  .weekgrid th.today, .weekgrid td.today { background:var(--chip-a); }
-  .weekgrid td { text-align:center; padding:4px 3px; border-top:1px solid var(--line); color:var(--ink-3); }
-  .weekgrid td:first-child, .weekgrid th:first-child { text-align:left; white-space:nowrap; }
+  .evdot { flex:none; width:27px; text-align:center; font-size:16px; }
+
   .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
   @media (min-width:560px) { .stats { grid-template-columns:repeat(4,1fr); } }
-  .stat { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px 12px; position:relative; overflow:hidden; }
-  .stat .v { font-family:"Chakra Petch",sans-serif; font-size:34px; font-weight:700; line-height:1; letter-spacing:.01em; }
+  .stat { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:14px 16px 12px; position:relative; overflow:hidden; }
+  .stat .v { font-family:"Chakra Petch",sans-serif; font-size:33px; font-weight:700; line-height:1; }
   .stat .v small { font-size:16px; color:var(--ink-3); font-weight:600; }
   .stat .l { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin-top:6px; }
   .stat .delta { font-family:"Chakra Petch",sans-serif; font-size:11.5px; font-weight:700; margin-top:3px; }
   .stat .delta.up { color:var(--teal); } .stat .delta.down { color:var(--accent); } .stat .delta.flat { color:var(--ink-3); }
-  .stat.big { grid-column:span 2; }
+  .stat.wide { grid-column:span 2; }
   .stat.c-steps .v { color:var(--teal); } .stat.c-vol .v { color:var(--gold); }
   .stat.c-score .v { color:var(--accent); } .stat.c-peso .v { color:var(--blue); }
-  .spark { position:absolute; right:10px; top:12px; display:flex; align-items:flex-end; gap:3px; height:40px; }
-  .spark i { display:block; width:7px; background:color-mix(in srgb,var(--teal) 45%,transparent); border-radius:2px 2px 0 0; }
+  .spark { position:absolute; right:12px; top:14px; display:flex; align-items:flex-end; gap:3px; height:38px; }
+  .spark i { display:block; width:7px; background:color-mix(in srgb,var(--teal) 40%,transparent); border-radius:2px; }
   .spark i.hot { background:var(--teal); }
-  .price { font-family:"Chakra Petch",sans-serif; font-size:11px; color:var(--ink-3); white-space:nowrap; }
+
+  .inv { display:flex; align-items:center; gap:11px; background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:12px 14px; margin-bottom:7px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .inv * { pointer-events:none; }
+  .inv:active { transform:scale(.985); }
+  .inv .txt { flex:1; font-size:14px; }
+  .inv .txt small { display:block; font-size:11px; color:var(--ink-3); }
+  .inv .side { font-family:"Chakra Petch",sans-serif; font-size:11.5px; font-weight:700; color:var(--ink-3); text-align:right; white-space:nowrap; }
+  .inv.p1 { border-left:4px solid var(--accent); } .inv.p2 { border-left:4px solid var(--gold); }
+  .inv.p3 { border-left:4px solid var(--line); }
+  .inv .side .warn { color:var(--accent); }
+  .inv .side .ok { color:var(--teal); }
+
+  nav { position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; gap:8px;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(14px); border-top:1px solid var(--line); }
+  nav button { flex:1; max-width:150px; padding:11px 0; border-radius:16px; border:none; background:transparent;
+    color:var(--ink-3); font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:12.5px;
+    letter-spacing:.05em; cursor:pointer; }
+  nav button.on { background:var(--surface); color:var(--ink); border:1px solid var(--line); }
+
+  .screen { display:none; } .screen.on { display:block; }
   #login { max-width:340px; margin:14vh auto 0; }
-  #login input { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid var(--line);
+  #login input { width:100%; padding:12px; margin-bottom:10px; border-radius:12px; border:1px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:15px; }
-  #login button { width:100%; padding:13px; border-radius:10px; border:none; background:var(--accent); color:#fff;
-    font-weight:700; font-size:15px; cursor:pointer; font-family:"Chakra Petch",sans-serif; text-transform:uppercase; letter-spacing:.05em; }
+  #login button { width:100%; padding:13px; border-radius:12px; border:none; background:var(--accent); color:#fff;
+    font-weight:700; font-size:15px; cursor:pointer; font-family:"Chakra Petch",sans-serif; }
   #loginMsg { color:var(--accent); font-size:13px; min-height:18px; margin-top:8px; }
   #app { display:none; }
   .muted { color:var(--ink-3); font-size:12px; }
@@ -106,8 +140,8 @@
 <div class="wrap">
 
   <div id="login">
-    <h1>Copiloto<small>login · teu banco, teus dados</small></h1>
-    <div style="height:18px"></div>
+    <h1 style="font-size:24px; text-transform:uppercase">Copiloto</h1>
+    <div style="height:14px"></div>
     <input id="email" type="email" autocomplete="username" value="gabesuit@gmail.com" placeholder="email">
     <input id="pass" type="password" autocomplete="current-password" placeholder="senha">
     <button onclick="doLogin()">Entrar</button>
@@ -115,68 +149,80 @@
   </div>
 
   <div id="app">
-    <div class="card">
-      <div class="hud-top">
-        <h1>Copiloto<small id="weekLabel"></small></h1>
-        <div class="hud-num" style="font-size:30px"><span id="flame">🔥 0</span><small>dias completos seguidos<br><span id="bestStreak">melhor: —</span></small></div>
+    <div class="top">
+      <div class="date"><span id="dateLine">—</span><small id="dateSub"></small></div>
+      <div class="pills">
+        <span class="pill">🏆 <b id="wins">0</b> hoje</span>
+        <span class="pill">consist. <b id="consist">—</b></span>
       </div>
-      <div class="xp-row"><span style="color:var(--ink-3)">ritmo da semana (zera seg) <span id="syncDot"></span></span><span id="xpPct"></span></div>
-      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
-      <div id="todayLine"></div>
     </div>
 
-    <h2>Central <span>· teus números, ao vivo</span></h2>
-    <div class="stats" id="stats"></div>
+    <!-- HOJE -->
+    <div class="screen on" id="s-hoje">
+      <div class="now-card">
+        <div class="now-tag">AGORA</div>
+        <div class="now-title" id="nowTitle">…</div>
+        <div class="next-row"><span id="nextTitle"></span><span class="eta" id="nextEta"></span></div>
+      </div>
 
-    <h2>Hoje <span>· núcleo 100% = dia completo 🔥</span></h2>
-    <div id="todayList"></div>
+      <div class="capture">
+        <input type="text" id="capText" placeholder="+ adicionar ao dia…" enterkeyhint="done">
+        <input type="date" id="capDate" title="data (padrão: hoje)">
+        <button onclick="addItem()" aria-label="adicionar">+</button>
+      </div>
 
-    <h2>Semana</h2>
-    <div class="card weekgrid" id="weekGrid"></div>
+      <div id="blocks"></div>
 
-    <h2>Missões da semana</h2>
-    <div id="weeklyList" class="teal"></div>
+      <h2>Da semana</h2>
+      <div id="weeklyList"></div>
 
-    <h2>Chefões <span id="bossProgress">· 0/8</span></h2>
-    <div id="bossList" class="blue"></div>
+      <p class="muted" style="margin-top:16px"><span id="syncDot"></span></p>
+    </div>
 
-    <h2>Compras <span>· marca quando conseguir</span></h2>
-    <div id="shopList" class="gold"></div>
+    <!-- CORPO -->
+    <div class="screen" id="s-corpo">
+      <h2 style="margin-top:6px"><b>Central</b> · teus números, ao vivo</h2>
+      <div class="stats" id="stats"></div>
+      <p class="muted" style="margin-top:14px">Passos entram às 23h55 (Atalho). Análises completas no
+        <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.</p>
+    </div>
 
-    <p class="muted" style="margin-top:14px">
-      Passos entram sozinhos às 23h55 (Atalho). Análises completas:
-      <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.
-      <span id="logoutLink" style="float:right">v1.7 · <a href="#" onclick="logout()">sair</a></span>
-    </p>
+    <!-- ARSENAL -->
+    <div class="screen" id="s-arsenal">
+      <h2 style="margin-top:6px"><b>Preciso</b> · toca quando conseguir</h2>
+      <div id="invNeed"></div>
+      <h2><b>Tenho</b> · consumíveis mostram quando repor</h2>
+      <div id="invHave"></div>
+      <h2><b>Setup</b> <span id="bossProgress"></span></h2>
+      <div id="bossList"></div>
+      <p class="muted" style="margin-top:16px">v2.0 · <a href="#" onclick="logout()">sair</a></p>
+    </div>
   </div>
 </div>
+
+<nav id="nav" style="display:none">
+  <button class="on" data-s="hoje" onclick="show('hoje')">HOJE</button>
+  <button data-s="corpo" onclick="show('corpo')">CORPO</button>
+  <button data-s="arsenal" onclick="show('arsenal')">ARSENAL</button>
+</nav>
 
 <script>
 const SB = "https://qgawtutaqukuxctcoxnv.supabase.co";
 const KEY = "sb_publishable_W6Dcujy_B3GAU3DmpgC7PA_SEMG9mB3";
 const CORE = ["cre","caf","cel","son","fum"];
+const BLOCKS = [["manha","🌅 Manhã",6,12],["tarde","☀️ Tarde",12,18],["noite","🌙 Noite",18,24]];
+const NOMINAL = { manha:"08:00", tarde:"15:00", noite:"21:30" };
 let tokens = JSON.parse(localStorage.getItem("cp_tokens") || "null");
-let missions = [], dchecks = {}, wchecks = {}, ochecks = {};
+let missions = [], dchecks = {}, wchecks = {}, ochecks = {}, dayItems = [], events = [], invItems = [];
 
 const iso = d => d.toISOString().slice(0,10);
 const today = () => { const d = new Date(); return iso(new Date(d.getTime() - d.getTimezoneOffset()*60000)); };
 function weekStart(dstr) { const d = new Date(dstr + "T12:00:00");
   const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return iso(d); }
 
-async function api(path, opts = {}, retry = true) {
-  const r = await fetch(SB + path, { ...opts, headers: {
-    "apikey": KEY, "Authorization": "Bearer " + (tokens ? tokens.access_token : KEY),
-    "Content-Type": "application/json", ...(opts.headers || {}) } });
-  if (r.status === 401 && retry && tokens && tokens.refresh_token) {
-    const ok = await refresh(); if (ok) return api(path, opts, false); else { logout(); throw new Error("auth"); }
-  }
-  if (!r.ok) throw new Error(await r.text());
-  const txt = await r.text(); return txt ? JSON.parse(txt) : null;
-}
+/* ---------- auth ---------- */
 let refreshing = null;
 function refresh() {
-  // single-flight: chamadas paralelas compartilham o MESMO refresh — evita a
-  // rotação de refresh-token do Supabase matar a sessão (reuse detection)
   if (refreshing) return refreshing;
   refreshing = (async () => {
     try {
@@ -188,6 +234,16 @@ function refresh() {
     } finally { setTimeout(() => { refreshing = null; }, 500); }
   })();
   return refreshing;
+}
+async function api(path, opts = {}, retry = true) {
+  const r = await fetch(SB + path, { ...opts, headers: {
+    "apikey": KEY, "Authorization": "Bearer " + (tokens ? tokens.access_token : KEY),
+    "Content-Type": "application/json", ...(opts.headers || {}) } });
+  if (r.status === 401 && retry && tokens && tokens.refresh_token) {
+    const ok = await refresh(); if (ok) return api(path, opts, false); else { logout(); throw new Error("auth"); }
+  }
+  if (!r.ok) throw new Error(await r.text());
+  const txt = await r.text(); return txt ? JSON.parse(txt) : null;
 }
 async function doLogin() {
   const msg = document.getElementById("loginMsg"); msg.textContent = "entrando…";
@@ -201,151 +257,245 @@ async function doLogin() {
 }
 function logout() { localStorage.removeItem("cp_tokens"); tokens = null; location.reload(); }
 
+/* ---------- boot ---------- */
 async function boot() {
   try {
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
-    // refresh proativo ANTES das chamadas paralelas: sessão sempre fresca,
-    // e nenhuma corrida de 401s simultâneos
-    if (tokens && tokens.refresh_token) {
-      const ok = await refresh();
-      if (!ok) { logout(); return; }
-    }
-    const since = iso(new Date(Date.now() - 70*86400000));
-    const ws = weekStart(today());
-    const [ms, dc, wc, oc] = await Promise.all([
+    document.getElementById("nav").style.display = "flex";
+    if (tokens && tokens.refresh_token) { const ok = await refresh(); if (!ok) { logout(); return; } }
+    const t = today(), since = iso(new Date(Date.now() - 40*86400000)), ws = weekStart(t);
+    const [ms, dc, wc, oc, di, ev, inv] = await Promise.all([
       api("/rest/v1/missions?active=eq.true&order=sort"),
       api("/rest/v1/daily_checks?date=gte." + since + "&select=date,mission_key,done"),
       api("/rest/v1/weekly_checks?week_start=eq." + ws + "&select=mission_key,done"),
-      api("/rest/v1/one_time_checks?select=mission_key,done"),
+      api("/rest/v1/one_time_checks?select=mission_key,done,done_at"),
+      api("/rest/v1/day_items?or=(date.eq." + t + ",and(date.lt." + t + ",done.is.false))&order=created_at"),
+      api("/rest/v1/calendar_events?date=eq." + t + "&order=start_ts"),
+      api("/rest/v1/inventory?order=sort"),
     ]);
-    missions = ms;
+    missions = ms; dayItems = di; events = ev; invItems = inv;
     dchecks = {}; dc.forEach(c => { dchecks[c.date + "|" + c.mission_key] = c.done; });
     wchecks = {}; wc.forEach(c => { wchecks[c.mission_key] = c.done; });
-    ochecks = {}; oc.forEach(c => { ochecks[c.mission_key] = c.done; });
+    ochecks = {}; oc.forEach(c => { ochecks[c.mission_key] = c; });
+    document.getElementById("capDate").value = t;
     render(); loadStats();
   } catch (e) { console.error(e); }
 }
 
+function show(s) {
+  document.querySelectorAll(".screen").forEach(el => el.classList.remove("on"));
+  document.getElementById("s-" + s).classList.add("on");
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.s === s));
+}
+
+/* ---------- schedule ---------- */
 function dayLabel(m, dstr) {
   if (m.key !== "tre" || !m.meta || !m.meta.day_labels) return m.label;
   return m.meta.day_labels[String(new Date(dstr + "T12:00:00").getDay())] || m.label;
 }
-
-function render() {
-  const t = today(), ws = weekStart(t);
-  const wsD = new Date(ws + "T12:00:00"), weD = new Date(wsD); weD.setDate(weD.getDate() + 6);
-  const fmt = d => d.getDate() + "/" + (d.getMonth()+1);
-  document.getElementById("weekLabel").textContent = "semana " + fmt(wsD) + "–" + fmt(weD);
-  const daily = missions.filter(m => m.kind === "daily");
-
-  // HOJE
-  const tl = document.getElementById("todayList"); tl.innerHTML = "";
-  daily.forEach(m => {
-    const done = !!dchecks[t + "|" + m.key];
-    tl.appendChild(questRow(m.id, dayLabel(m, t), "", done,
-      () => toggleDaily(t, m.key, !done), m.key === "tre" ? "gold" : ""));
+function blockOf(hm) {
+  const h = hm !== null && hm !== undefined ? parseInt(hm.slice(0,2),10) : new Date().getHours();
+  for (const [k,,a,b] of BLOCKS) if (h >= a && h < b) return k;
+  return h < 6 ? "manha" : "noite";
+}
+function todaySchedule() {
+  const t = today(), list = [];
+  events.forEach(e => {
+    const hm = e.start_ts ? new Date(e.start_ts).toTimeString().slice(0,5) : null;
+    list.push({ kind:"evento", id:"ev" + e.id, label:e.title, time:hm, block: hm ? blockOf(hm) : "manha" });
   });
-
-  // SEMANA grid
-  const days = []; for (let i = 0; i < 7; i++) { const d = new Date(ws + "T12:00:00"); d.setDate(d.getDate() + i); days.push(iso(d)); }
-  const names = ["seg","ter","qua","qui","sex","sáb","dom"];
-  let html = "<table><tr><th>missão</th>" + names.map((n,i) =>
-    "<th class='" + (days[i] === t ? "today" : "") + "'>" + n + "</th>").join("") + "</tr>";
-  daily.forEach(m => {
-    html += "<tr><td>" + m.label.slice(0, 22) + "</td>" + days.map(d =>
-      "<td class='" + (d === t ? "today" : "") + "'>" + (dchecks[d + "|" + m.key] ? "✓" : "·") + "</td>").join("") + "</tr>";
+  missions.filter(m => m.kind === "daily").forEach(m => {
+    list.push({ kind:"missao", m, id:m.key, label: dayLabel(m, t), time: NOMINAL[m.anchor] || "15:00",
+      block: m.anchor || "tarde", done: !!dchecks[t + "|" + m.key], nominal:true });
   });
-  document.getElementById("weekGrid").innerHTML = html + "</table>";
-
-  // semanais / chefões / compras
-  fillList("weeklyList", missions.filter(m => m.kind === "weekly"), m => !!wchecks[m.key], m => toggleWeekly(m.key));
-  fillList("bossList", missions.filter(m => m.kind === "boss"), m => !!ochecks[m.key], m => toggleOnce(m));
-  const bosses = missions.filter(m => m.kind === "boss");
-  document.getElementById("bossProgress").textContent = "· " + bosses.filter(m => ochecks[m.key]).length + "/" + bosses.length + " concluídos";
-  fillList("shopList", missions.filter(m => m.kind === "shopping"), m => !!ochecks[m.key], m => toggleOnce(m), true);
-
-  // XP + streak
-  let xp = 0;
-  Object.keys(dchecks).forEach(k => { if (dchecks[k]) { const mk = k.split("|")[1];
-    const m = missions.find(x => x.key === mk); if (m) xp += m.xp; } });
-  missions.filter(m => m.kind === "weekly").forEach(m => { if (wchecks[m.key]) xp += m.xp; });
-  missions.filter(m => m.kind === "boss").forEach(m => { if (ochecks[m.key]) xp += m.xp; });
-
-  let weekXp = 0, weekMax = 0;
-  days.forEach(d => daily.forEach(m => { weekMax += m.xp; if (dchecks[d + "|" + m.key]) weekXp += m.xp; }));
-  missions.filter(m => m.kind === "weekly").forEach(m => { weekMax += m.xp; if (wchecks[m.key]) weekXp += m.xp; });
-  const pct = weekMax ? Math.round(100 * weekXp / weekMax) : 0;
-  document.getElementById("xpPct").textContent = pct + "% da semana";
-  document.getElementById("xpFill").style.width = pct + "%";
-  let streak = 0;
-  for (let i = 0; i < 70; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const ds = iso(new Date(d.getTime() - d.getTimezoneOffset()*60000));
-    const full = CORE.every(mk => dchecks[ds + "|" + mk]);
-    if (full) streak++; else if (i === 0) continue; else break;
-  }
-  document.getElementById("flame").textContent = "🔥 " + streak;
-  let best = 0, run = 0;
-  const allDates = [...new Set(Object.keys(dchecks).map(k => k.split("|")[0]))].sort();
-  let prevD = null;
-  allDates.forEach(ds => {
-    const full = CORE.every(mk => dchecks[ds + "|" + mk]);
-    if (!full) { run = 0; prevD = null; return; }
-    run = (prevD && (new Date(ds) - new Date(prevD) === 86400000)) ? run + 1 : 1;
-    prevD = ds; if (run > best) best = run;
+  dayItems.forEach(it => {
+    list.push({ kind:"item", it, id:"di" + it.id, label: it.text, time:null, block: blockOf(null), done: it.done,
+      old: it.date < t });
   });
-  document.getElementById("bestStreak").textContent = "melhor: " + Math.max(best, streak) + (Math.max(best, streak) === 1 ? " dia" : " dias");
-  const names2 = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
-  const tre = missions.find(m => m.key === "tre");
-  document.getElementById("todayLine").innerHTML = "Hoje é <b>" + names2[new Date().getDay()] +
-    "</b> — " + (tre ? dayLabel(tre, t) : "");
+  return list;
+}
+function renderNow(list) {
+  const now = new Date(); const nowMin = now.getHours()*60 + now.getMinutes();
+  const pend = list.filter(x => !x.done && x.kind !== "evento" || (x.kind === "evento" && x.time &&
+    (parseInt(x.time.slice(0,2))*60 + parseInt(x.time.slice(3))) >= nowMin - 60));
+  const timed = pend.map(x => ({...x,
+    min: x.time ? parseInt(x.time.slice(0,2))*60 + parseInt(x.time.slice(3)) : null }));
+  const upcoming = timed.filter(x => x.min !== null).sort((a,b) => a.min - b.min);
+  let cur = null;
+  for (const x of upcoming) { if (x.min <= nowMin) cur = x; else break; }
+  if (!cur) cur = timed.find(x => x.min === null) || upcoming[0];
+  const nxt = upcoming.find(x => x !== cur && x.min > nowMin);
+  document.getElementById("nowTitle").textContent = cur ? cur.label : "Tudo em dia 🙌";
+  const nEl = document.getElementById("nextTitle"), eEl = document.getElementById("nextEta");
+  if (nxt) {
+    nEl.textContent = "depois: " + nxt.label;
+    const d = nxt.min - nowMin;
+    eEl.textContent = d >= 60 ? "em " + Math.floor(d/60) + "h" + String(d%60).padStart(2,"0") : "em " + d + " min";
+  } else { nEl.textContent = ""; eEl.textContent = ""; }
 }
 
-function questRow(id, label, xp, done, onToggle, extraClass) {
+/* ---------- render ---------- */
+function render() {
+  const t = today();
+  const names = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+  const meses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  const d = new Date();
+  document.getElementById("dateLine").textContent = names[d.getDay()];
+  document.getElementById("dateSub").textContent = d.getDate() + " de " + meses[d.getMonth()];
+
+  const list = todaySchedule();
+  renderNow(list);
+
+  const blocksEl = document.getElementById("blocks"); blocksEl.innerHTML = "";
+  const curBlock = blockOf(null);
+  BLOCKS.forEach(([bk, bname]) => {
+    const items = list.filter(x => x.block === bk);
+    if (!items.length) return;
+    const div = document.createElement("div");
+    div.className = "block" + (bk === curBlock ? " now" : "");
+    div.innerHTML = "<div class='block-h'><span class='t'>" + bname + "</span>" +
+      (bk === curBlock ? "<span class='tag'>· AGORA</span>" : "") + "</div>";
+    items.sort((a,b) => (a.time || "99") < (b.time || "99") ? -1 : 1).forEach(x => div.appendChild(itemRow(x)));
+    blocksEl.appendChild(div);
+  });
+
+  const wl = document.getElementById("weeklyList"); wl.innerHTML = "";
+  missions.filter(m => m.kind === "weekly").forEach(m => {
+    wl.appendChild(itemRow({ kind:"semanal", m, label:m.label, done:!!wchecks[m.key], block:null }));
+  });
+
+  let wins = 0;
+  list.forEach(x => { if (x.done) wins++; });
+  missions.filter(m => m.kind === "weekly").forEach(m => { if (wchecks[m.key]) wins++; });
+  document.getElementById("wins").textContent = wins;
+  const start = new Date("2026-08-20T12:00:00");
+  const win = Math.min(30, Math.max(3, Math.round((Date.now() - start) / 86400000) + 1));
+  let done30 = 0;
+  for (let i = 0; i < win; i++) {
+    const dd = new Date(); dd.setDate(dd.getDate() - i);
+    const ds = iso(new Date(dd.getTime() - dd.getTimezoneOffset()*60000));
+    CORE.forEach(mk => { if (dchecks[ds + "|" + mk]) done30++; });
+  }
+  document.getElementById("consist").textContent = Math.round(100 * done30 / (CORE.length * win)) + "%";
+
+  renderArsenal();
+}
+
+function domClass(x) {
+  if (x.kind === "evento") return "d-evento";
+  if (x.kind === "item") return "d-vida";
+  const dom = (x.m && x.m.domain) || "saude";
+  return "d-" + dom;
+}
+function itemRow(x) {
   const div = document.createElement("div");
-  div.className = "quest " + (extraClass || "") + (done ? " done" : "");
-  const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = done;
-  const lb = document.createElement("label"); lb.innerHTML = label;
-  div.appendChild(cb); div.appendChild(lb);
-  if (xp) { const s = document.createElement("span"); s.className = "xp"; s.textContent = xp; div.appendChild(s); }
-  // a LINHA INTEIRA é o alvo de toque — preço, XP, padding, tudo toggla
-  div.addEventListener("click", (e) => { e.preventDefault(); onToggle(); });
+  div.className = "item " + domClass(x) + (x.done ? " done" : "");
+  if (x.kind === "evento") {
+    div.innerHTML = "<span class='evdot'>📌</span><span class='txt'><b>" + x.label + "</b><small>compromisso de hoje</small></span>" +
+      (x.time ? "<span class='when'>" + x.time + "</span>" : "");
+    return div; // evento é lembrete, não checkbox
+  }
+  div.innerHTML = "<span class='tick" + (x.done ? " on" : "") + "'></span><span class='txt'>" + x.label +
+    (x.old ? "<small>veio de outro dia</small>" : "") + "</span>";
+  div.addEventListener("click", () => {
+    if (x.kind === "missao") toggleDaily(today(), x.m.key, !x.done);
+    else if (x.kind === "item") toggleItem(x.it);
+    else if (x.kind === "semanal") toggleWeekly(x.m.key);
+  });
   return div;
 }
-function fillList(elId, ms, isDone, onToggle, showPrice) {
-  const el = document.getElementById(elId); el.innerHTML = "";
-  ms.forEach(m => {
-    const row = questRow(m.key, m.label, "", isDone(m), () => onToggle(m), "p" + (m.priority || 2));
-    if (showPrice && m.meta && m.meta.price) {
-      const s = document.createElement("span"); s.className = "price"; s.textContent = m.meta.price; row.appendChild(s);
-    }
-    el.appendChild(row);
+
+/* ---------- arsenal ---------- */
+function renderArsenal() {
+  const need = document.getElementById("invNeed"), have = document.getElementById("invHave");
+  need.innerHTML = ""; have.innerHTML = "";
+  invItems.forEach(it => {
+    const div = document.createElement("div");
+    div.className = "inv p" + (it.priority || 2);
+    let side = "";
+    if (it.status === "preciso") side = it.price_hint || "";
+    else if (it.kind === "consumable" && it.qty != null && it.daily_burn) {
+      const days = Math.floor(it.qty / it.daily_burn);
+      side = days <= 7 ? "<span class='warn'>repor em ~" + days + "d</span>" : "<span class='ok'>~" + days + "d restantes</span>";
+    } else side = "<span class='ok'>✓</span>";
+    div.innerHTML = "<span class='txt'>" + it.name +
+      (it.status === "tenho" && it.kind === "consumable" ? "<small>toca p/ registrar reposição</small>" : "") +
+      "</span><span class='side'>" + side + "</span>";
+    div.addEventListener("click", () => it.status === "preciso" ? acquireItem(it) : (it.kind === "consumable" ? restockItem(it) : null));
+    (it.status === "preciso" ? need : have).appendChild(div);
   });
+
+  const bl = document.getElementById("bossList"); bl.innerHTML = "";
+  const bosses = missions.filter(m => m.kind === "boss");
+  let doneCount = 0;
+  bosses.forEach(m => {
+    const oc = ochecks[m.key];
+    let done = !!(oc && oc.done);
+    let note = "";
+    if (done && m.recur_months && oc.done_at) {
+      const due = new Date(oc.done_at); due.setMonth(due.getMonth() + m.recur_months);
+      if (due < new Date()) { done = false; note = "<small>venceu — hora de repetir</small>"; }
+      else note = "<small>próxima: " + due.toLocaleDateString("pt-BR", {month:"short", year:"2-digit"}) + "</small>";
+    }
+    if (done) doneCount++;
+    const div = document.createElement("div");
+    div.className = "item d-saude" + (done ? " done" : "");
+    div.innerHTML = "<span class='tick" + (done ? " on" : "") + "'></span><span class='txt'>" + m.label + note + "</span>";
+    div.addEventListener("click", () => toggleOnce(m));
+    bl.appendChild(div);
+  });
+  document.getElementById("bossProgress").textContent = "· " + doneCount + "/" + bosses.length;
+}
+async function acquireItem(it) {
+  it.status = "tenho"; it.qty = it.preset_qty; it.daily_burn = it.preset_burn; renderArsenal();
+  try { await upsertPatch("inventory?key=eq." + it.key, { status:"tenho", qty: it.preset_qty,
+    daily_burn: it.preset_burn, acquired_at: new Date().toISOString() }); }
+  catch (e) { it.status = "preciso"; renderArsenal(); syncing(false, true); }
+}
+async function restockItem(it) {
+  const old = it.qty; it.qty = it.preset_qty; renderArsenal();
+  try { await upsertPatch("inventory?key=eq." + it.key, { qty: it.preset_qty, acquired_at: new Date().toISOString() }); }
+  catch (e) { it.qty = old; renderArsenal(); syncing(false, true); }
 }
 
+/* ---------- writes ---------- */
 function syncing(on, err) {
   const el = document.getElementById("syncDot");
   if (err) { el.textContent = "⚠️ erro ao salvar — recarrega a página"; el.style.color = "var(--accent)"; return; }
   el.style.color = "var(--teal)";
   el.textContent = on ? "salvando…" : "✓ salvo";
-  if (!on) setTimeout(() => { el.textContent = ""; }, 1500);
+  if (!on) setTimeout(() => { el.textContent = ""; }, 1400);
 }
-async function upsert(path, conflict, body, attempt = 1) {
+async function req(method, path, body, extraHeaders, attempt = 1) {
   syncing(true);
   try {
-    await api("/rest/v1/" + path + "?on_conflict=" + conflict, { method:"POST",
-      headers: { "Prefer": "resolution=merge-duplicates" }, body: JSON.stringify(body) });
+    const out = await api("/rest/v1/" + path, { method,
+      headers: { "Prefer": "resolution=merge-duplicates", ...(extraHeaders || {}) },
+      body: body ? JSON.stringify(body) : undefined });
+    syncing(false);
+    return out;
   } catch (e) {
-    if (attempt < 3) { await new Promise(r => setTimeout(r, 700 * attempt)); return upsert(path, conflict, body, attempt + 1); }
+    if (attempt < 3) { await new Promise(r => setTimeout(r, 700 * attempt)); return req(method, path, body, extraHeaders, attempt + 1); }
     throw e;
   }
-  syncing(false);
 }
+const upsert = (path, conflict, body) => req("POST", path + "?on_conflict=" + conflict, body);
+const upsertPatch = (pathq, body) => req("PATCH", pathq, body);
+
 async function toggleDaily(date, key, val) {
   dchecks[date + "|" + key] = val; render();
-  try { await upsert("daily_checks", "date,mission_key", { date, mission_key: key, done: val, updated_at: new Date().toISOString() }); }
-  catch (e) { dchecks[date + "|" + key] = !val; render(); syncing(false, true); }
+  try {
+    await upsert("daily_checks", "date,mission_key", { date, mission_key: key, done: val, updated_at: new Date().toISOString() });
+    if (key === "cre") {
+      const it = invItems.find(i => i.key === "creatina");
+      if (it && it.status === "tenho" && it.qty != null && it.daily_burn) {
+        it.qty = Math.max(0, it.qty + (val ? -it.daily_burn : it.daily_burn));
+        renderArsenal();
+        upsertPatch("inventory?key=eq.creatina", { qty: it.qty }).catch(() => {});
+      }
+    }
+  } catch (e) { dchecks[date + "|" + key] = !val; render(); syncing(false, true); }
 }
 async function toggleWeekly(key) {
   const ws = weekStart(today()); const val = !wchecks[key]; wchecks[key] = val; render();
@@ -353,11 +503,32 @@ async function toggleWeekly(key) {
   catch (e) { wchecks[key] = !val; render(); syncing(false, true); }
 }
 async function toggleOnce(m) {
-  const val = !ochecks[m.key]; ochecks[m.key] = val; render();
+  const oc = ochecks[m.key]; const val = !(oc && oc.done);
+  ochecks[m.key] = { done: val, done_at: val ? new Date().toISOString() : null }; renderArsenal();
   try { await upsert("one_time_checks", "mission_key", { mission_key: m.key, done: val, done_at: val ? new Date().toISOString() : null }); }
-  catch (e) { ochecks[m.key] = !val; render(); syncing(false, true); }
+  catch (e) { ochecks[m.key] = oc; renderArsenal(); syncing(false, true); }
 }
+async function toggleItem(it) {
+  it.done = !it.done; render();
+  try { await upsertPatch("day_items?id=eq." + it.id, { done: it.done }); }
+  catch (e) { it.done = !it.done; render(); syncing(false, true); }
+}
+async function addItem() {
+  const inp = document.getElementById("capText");
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const date = document.getElementById("capDate").value || today();
+  inp.value = "";
+  try {
+    const rows = await req("POST", "day_items", { date, text: txt }, { "Prefer": "return=representation" });
+    if (date <= today()) { dayItems.push(rows[0]); render(); }
+  } catch (e) { syncing(false, true); }
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && document.activeElement === document.getElementById("capText")) addItem();
+});
 
+/* ---------- corpo ---------- */
 async function loadStats() {
   try {
     const [hd, w, sc, bd, prs] = await Promise.all([
@@ -376,7 +547,6 @@ async function loadStats() {
       if (opts.spark) h += opts.spark;
       d.innerHTML = h; el.appendChild(d);
     };
-    // passos: hoje/último + delta vs média 7d + sparkline
     if (hd.length) {
       const latest = hd[0], prev = hd.slice(1, 8);
       const avg = prev.length ? prev.reduce((a, x) => a + (x.steps || 0), 0) / prev.length : null;
@@ -384,37 +554,34 @@ async function loadStats() {
       const bars = hd.slice(0, 7).reverse();
       const mx = Math.max(...bars.map(b => b.steps || 0), 1);
       const spark = "<div class='spark'>" + bars.map((b, i) =>
-        "<i style='height:" + Math.max(4, Math.round(40 * (b.steps || 0) / mx)) + "px' " +
+        "<i style='height:" + Math.max(4, Math.round(38 * (b.steps || 0) / mx)) + "px' " +
         (i === bars.length - 1 ? "class='hot'" : "") + "></i>").join("") + "</div>";
       tile(latest.steps.toLocaleString("pt-BR"), "passos · " + latest.date.slice(8,10) + "/" + latest.date.slice(5,7),
-        { cls: "big c-steps", spark,
+        { cls: "wide c-steps", spark,
           delta: deltaPct === null ? "" : (deltaPct >= 0 ? "▲ +" : "▼ ") + deltaPct + "% vs média 7d",
           deltaCls: deltaPct === null ? "flat" : (deltaPct >= 0 ? "up" : "down") });
-    } else tile("—", "passos", { cls: "big c-steps" });
-    // volume da semana + treinos da semana
+    } else tile("—", "passos", { cls: "wide c-steps" });
     const ws = weekStart(today());
     const wk = w.filter(x => x.date >= ws);
     const wkVol = wk.reduce((a, x) => a + (Number(x.volume_kg) || 0), 0);
     const wkLift = wk.filter(x => Number(x.volume_kg) > 0).length;
     const wkFut = wk.filter(x => x.focus === "football").length;
-    tile((wkVol/1000).toFixed(1) + "<small> t</small>", "volume da semana", { cls: "big c-vol",
-      delta: wkLift + " treino" + (wkLift !== 1 ? "s" : "") + (wkFut ? " + " + wkFut + " ⚽" : "") + " esta semana", deltaCls: "up" });
-    // score / peso
-    let scDelta = "", scL = "score de força · 1RM ÷ peso";
+    tile((wkVol/1000).toFixed(1) + "<small> t</small>", "volume da semana", { cls: "wide c-vol",
+      delta: wkLift + " treino" + (wkLift !== 1 ? "s" : "") + (wkFut ? " + " + wkFut + " ⚽" : ""), deltaCls: "up" });
+    let scDelta = "";
     if (sc.length && sc[0].meta && sc[0].meta.components) {
       scDelta = sc[0].meta.components.map(c => c.p.slice(0,4).toLowerCase() + " ," + c.x.toFixed(2).slice(2)).join(" · ");
     }
-    tile(sc.length ? sc[0].comp_strength : "—", scL, { cls: "c-score", delta: scDelta, deltaCls: "flat" });
+    tile(sc.length ? sc[0].comp_strength : "—", "score de força · 1RM ÷ peso", { cls: "c-score", delta: scDelta, deltaCls: "flat" });
     if (bd.length) {
       const dw = bd.length > 1 ? (bd[0].weight_kg - bd[1].weight_kg) : null;
       tile(bd[0].weight_kg + "<small> kg</small>", "peso", { cls: "c-peso",
         delta: dw === null ? "registra 1×/semana" : (dw >= 0 ? "▲ +" : "▼ ") + Math.abs(dw).toFixed(1) + " kg",
         deltaCls: dw === null ? "flat" : (dw <= 0 ? "up" : "flat") });
     } else tile("—", "peso", { cls: "c-peso" });
-    // all-time + PRs
     const allVol = w.reduce((a, x) => a + (Number(x.volume_kg) || 0), 0);
     tile(Math.round(allVol/1000) + "<small> t</small>", "total já levantado", {});
-    tile(new Set(prs.map(p => p.exercise_id)).size, "exercícios com PR", { delta: "recorde pessoal de força (1RM estimado)", deltaCls: "flat" });
+    tile(new Set(prs.map(p => p.exercise_id)).size, "exercícios com PR", { delta: "recorde pessoal (1RM estim.)", deltaCls: "flat" });
   } catch (e) { console.error(e); }
 }
 
