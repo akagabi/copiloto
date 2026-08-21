@@ -44,6 +44,8 @@
   .xp-bar { margin-top:6px; height:13px; border-radius:7px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden; }
   .xp-fill { height:100%; width:0%; transition:width .3s ease;
     background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 70%,var(--bg)) 10px 20px); }
+  .xp-bar.week { height:8px; }
+  .xp-fill.week { background:var(--gold); }
   #todayLine { margin-top:10px; font-size:13.5px; color:var(--ink-2); }
   #todayLine b { color:var(--accent); }
   .quest { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
@@ -118,8 +120,10 @@
         <h1>Copiloto<small id="weekLabel"></small></h1>
         <div class="hud-num"><span id="flame">🔥 0</span><small>sequência de<br>dias completos</small></div>
       </div>
-      <div class="xp-row"><span>XP total: <b id="xpNow">0</b> <span id="syncDot"></span></span><span id="xpPct"></span></div>
-      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      <div class="xp-row"><span id="lvlName" style="font-weight:700">NV 1</span><span id="lvlXp"></span></div>
+      <div class="xp-bar"><div class="xp-fill" id="lvlFill"></div></div>
+      <div class="xp-row" style="margin-top:9px"><span style="color:var(--ink-3)">ritmo da semana (zera seg) <span id="syncDot"></span></span><span id="xpPct"></span></div>
+      <div class="xp-bar week"><div class="xp-fill week" id="xpFill"></div></div>
       <div id="todayLine"></div>
     </div>
 
@@ -144,7 +148,7 @@
     <p class="muted" style="margin-top:14px">
       Passos entram sozinhos às 23h55 (Atalho). Análises completas:
       <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.
-      <span id="logoutLink" style="float:right">v1.5 · <a href="#" onclick="logout()">sair</a></span>
+      <span id="logoutLink" style="float:right">v1.6 · <a href="#" onclick="logout()">sair</a></span>
     </p>
   </div>
 </div>
@@ -267,7 +271,13 @@ function render() {
     const m = missions.find(x => x.key === mk); if (m) xp += m.xp; } });
   missions.filter(m => m.kind === "weekly").forEach(m => { if (wchecks[m.key]) xp += m.xp; });
   missions.filter(m => m.kind === "boss").forEach(m => { if (ochecks[m.key]) xp += m.xp; });
-  document.getElementById("xpNow").textContent = xp;
+  const NOMES = ["Recruta","Iniciado","Consistente","Disciplinado","Atleta","Máquina","Predador","Lendário","Mutante","Batman"];
+  let lvl = 1, need = 100, base = 0;
+  while (xp >= base + need) { base += need; lvl++; need = 100 * lvl; }
+  const nome = NOMES[Math.min(lvl - 1, 9)] + (lvl > 10 ? " " + lvl : "");
+  document.getElementById("lvlName").textContent = "NV " + lvl + " · " + nome.toUpperCase();
+  document.getElementById("lvlXp").textContent = xp + " XP · faltam " + (base + need - xp) + " pro Nv " + (lvl + 1);
+  document.getElementById("lvlFill").style.width = Math.round(100 * (xp - base) / need) + "%";
   let weekXp = 0, weekMax = 0;
   days.forEach(d => daily.forEach(m => { weekMax += m.xp; if (dchecks[d + "|" + m.key]) weekXp += m.xp; }));
   missions.filter(m => m.kind === "weekly").forEach(m => { weekMax += m.xp; if (wchecks[m.key]) weekXp += m.xp; });
