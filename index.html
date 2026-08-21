@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Copiloto</title>
+<meta name="theme-color" content="#121417">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg:#F2F3F1; --surface:#FFFFFF; --surface-2:#E7E9E6;
+    --ink:#16181B; --ink-2:#4B5158; --ink-3:#7C838B; --line:#DADDD8;
+    --accent:#C43B2E; --gold:#B5821D; --blue:#2F5FA8; --teal:#00806B;
+    --chip-a:#C43B2E1A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#121417; --surface:#1A1D21; --surface-2:#23272C;
+      --ink:#ECEDEE; --ink-2:#AAB1B8; --ink-3:#79818A; --line:#2E333A;
+      --accent:#E56A58; --gold:#B08129; --blue:#5E8FD8; --teal:#2AA187;
+      --chip-a:#E56A5826; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Archivo",-apple-system,sans-serif; font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding-bottom:env(safe-area-inset-bottom); }
+  .wrap { max-width:680px; margin:0 auto; padding:22px 16px 80px; }
+  h1,h2,.hud-num { font-family:"Chakra Petch","Archivo",sans-serif; }
+  h1 { font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; margin:0; }
+  h1 small { display:block; font-size:11px; color:var(--ink-3); letter-spacing:.1em; font-weight:600; }
+  h2 { font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin:26px 0 10px; }
+  h2 span { color:var(--ink-3); font-size:11px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .hud-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .hud-num { font-size:22px; font-weight:700; color:var(--accent); white-space:nowrap; }
+  .hud-num small { display:block; font-size:9.5px; color:var(--ink-3); letter-spacing:.09em; text-transform:uppercase; text-align:right; }
+  .xp-row { display:flex; justify-content:space-between; align-items:baseline; margin-top:12px;
+    font-family:"Chakra Petch",sans-serif; font-size:12px; color:var(--ink-2); }
+  .xp-row b { color:var(--ink); font-size:15px; }
+  .xp-bar { margin-top:6px; height:13px; border-radius:7px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden; }
+  .xp-fill { height:100%; width:0%; transition:width .3s ease;
+    background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 70%,var(--bg)) 10px 20px); }
+  #todayLine { margin-top:10px; font-size:13.5px; color:var(--ink-2); }
+  #todayLine b { color:var(--accent); }
+  .quest { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:12px 14px; margin-bottom:8px; }
+  .quest label { flex:1; cursor:pointer; font-size:14px; color:var(--ink-2); }
+  .quest label b { color:var(--ink); font-weight:600; }
+  .quest .xp { font-family:"Chakra Petch",sans-serif; font-size:11px; color:var(--gold); font-weight:700; white-space:nowrap; }
+  .quest.p1 { border-left:4px solid var(--accent); }
+  .quest.p2 { border-left:4px solid var(--gold); }
+  .quest.p3 { border-left:4px solid var(--line); }
+  .quest.done label { text-decoration:line-through; opacity:.55; }
+  input[type=checkbox] { appearance:none; -webkit-appearance:none; flex:none; width:28px; height:28px;
+    border:2px solid var(--line); border-radius:9px; background:var(--surface-2); cursor:pointer; position:relative; margin:0; }
+  input[type=checkbox]:checked { background:var(--accent); border-color:var(--accent); }
+  input[type=checkbox]:checked::after { content:"✓"; color:var(--bg); font-weight:800; font-size:16px;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .teal input[type=checkbox]:checked { background:var(--teal); border-color:var(--teal); }
+  .blue input[type=checkbox]:checked { background:var(--blue); border-color:var(--blue); }
+  .gold input[type=checkbox]:checked { background:var(--gold); border-color:var(--gold); }
+  .weekgrid { overflow-x:auto; }
+  .weekgrid table { border-collapse:collapse; width:100%; min-width:460px; font-size:12px; }
+  .weekgrid th { font-family:"Chakra Petch",sans-serif; font-size:9.5px; color:var(--ink-3); text-transform:uppercase;
+    letter-spacing:.07em; padding:5px 3px; }
+  .weekgrid th.today, .weekgrid td.today { background:var(--chip-a); }
+  .weekgrid td { text-align:center; padding:4px 3px; border-top:1px solid var(--line); color:var(--ink-3); }
+  .weekgrid td:first-child, .weekgrid th:first-child { text-align:left; white-space:nowrap; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; }
+  .stat { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .stat .v { font-family:"Chakra Petch",sans-serif; font-size:19px; font-weight:700; }
+  .stat .l { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.07em; margin-top:2px; }
+  .price { font-family:"Chakra Petch",sans-serif; font-size:11px; color:var(--ink-3); white-space:nowrap; }
+  #login { max-width:340px; margin:14vh auto 0; }
+  #login input { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:15px; }
+  #login button { width:100%; padding:13px; border-radius:10px; border:none; background:var(--accent); color:#fff;
+    font-weight:700; font-size:15px; cursor:pointer; font-family:"Chakra Petch",sans-serif; text-transform:uppercase; letter-spacing:.05em; }
+  #loginMsg { color:var(--accent); font-size:13px; min-height:18px; margin-top:8px; }
+  #app { display:none; }
+  .muted { color:var(--ink-3); font-size:12px; }
+  #syncDot { font-size:11px; color:var(--teal); }
+  a { color:var(--blue); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="login">
+    <h1>Copiloto<small>login · teu banco, teus dados</small></h1>
+    <div style="height:18px"></div>
+    <input id="email" type="email" autocomplete="username" value="gabesuit@gmail.com" placeholder="email">
+    <input id="pass" type="password" autocomplete="current-password" placeholder="senha">
+    <button onclick="doLogin()">Entrar</button>
+    <div id="loginMsg"></div>
+  </div>
+
+  <div id="app">
+    <div class="card">
+      <div class="hud-top">
+        <h1>Copiloto<small id="weekLabel"></small></h1>
+        <div class="hud-num"><span id="flame">🔥 0</span><small>sequência de<br>dias completos</small></div>
+      </div>
+      <div class="xp-row"><span>XP total: <b id="xpNow">0</b> <span id="syncDot"></span></span><span id="xpPct"></span></div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      <div id="todayLine"></div>
+    </div>
+
+    <h2>Hoje <span>· núcleo 100% = dia completo 🔥</span></h2>
+    <div id="todayList"></div>
+
+    <h2>Semana</h2>
+    <div class="card weekgrid" id="weekGrid"></div>
+
+    <h2>Missões da semana <span>· 30 XP</span></h2>
+    <div id="weeklyList" class="teal"></div>
+
+    <h2>Chefões <span>· uma vez, XP grande</span></h2>
+    <div id="bossList" class="blue"></div>
+
+    <h2>Compras <span>· marca quando conseguir</span></h2>
+    <div id="shopList" class="gold"></div>
+
+    <h2>Dados <span>· direto do banco</span></h2>
+    <div class="stats" id="stats"></div>
+    <p class="muted" style="margin-top:14px">
+      Passos entram sozinhos às 23h55 (Atalho). Análises completas:
+      <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.
+      <span id="logoutLink" style="float:right"><a href="#" onclick="logout()">sair</a></span>
+    </p>
+  </div>
+</div>
+
+<script>
+const SB = "https://qgawtutaqukuxctcoxnv.supabase.co";
+const KEY = "sb_publishable_W6Dcujy_B3GAU3DmpgC7PA_SEMG9mB3";
+const CORE = ["cre","caf","cel","son","fum"];
+let tokens = JSON.parse(localStorage.getItem("cp_tokens") || "null");
+let missions = [], dchecks = {}, wchecks = {}, ochecks = {};
+
+const iso = d => d.toISOString().slice(0,10);
+const today = () => { const d = new Date(); return iso(new Date(d.getTime() - d.getTimezoneOffset()*60000)); };
+function weekStart(dstr) { const d = new Date(dstr + "T12:00:00");
+  const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return iso(d); }
+
+async function api(path, opts = {}, retry = true) {
+  const r = await fetch(SB + path, { ...opts, headers: {
+    "apikey": KEY, "Authorization": "Bearer " + (tokens ? tokens.access_token : KEY),
+    "Content-Type": "application/json", ...(opts.headers || {}) } });
+  if (r.status === 401 && retry && tokens && tokens.refresh_token) {
+    const ok = await refresh(); if (ok) return api(path, opts, false); else { logout(); throw new Error("auth"); }
+  }
+  if (!r.ok) throw new Error(await r.text());
+  const txt = await r.text(); return txt ? JSON.parse(txt) : null;
+}
+async function refresh() {
+  const r = await fetch(SB + "/auth/v1/token?grant_type=refresh_token", { method:"POST",
+    headers:{ "apikey": KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ refresh_token: tokens.refresh_token }) });
+  if (!r.ok) return false;
+  tokens = await r.json(); localStorage.setItem("cp_tokens", JSON.stringify(tokens)); return true;
+}
+async function doLogin() {
+  const msg = document.getElementById("loginMsg"); msg.textContent = "entrando…";
+  const r = await fetch(SB + "/auth/v1/token?grant_type=password", { method:"POST",
+    headers:{ "apikey": KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ email: document.getElementById("email").value.trim(),
+                           password: document.getElementById("pass").value }) });
+  if (!r.ok) { msg.textContent = "email ou senha incorretos"; return; }
+  tokens = await r.json(); localStorage.setItem("cp_tokens", JSON.stringify(tokens));
+  msg.textContent = ""; boot();
+}
+function logout() { localStorage.removeItem("cp_tokens"); tokens = null; location.reload(); }
+
+async function boot() {
+  try {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    const since = iso(new Date(Date.now() - 70*86400000));
+    const ws = weekStart(today());
+    const [ms, dc, wc, oc] = await Promise.all([
+      api("/rest/v1/missions?active=eq.true&order=sort"),
+      api("/rest/v1/daily_checks?date=gte." + since + "&select=date,mission_key,done"),
+      api("/rest/v1/weekly_checks?week_start=eq." + ws + "&select=mission_key,done"),
+      api("/rest/v1/one_time_checks?select=mission_key,done"),
+    ]);
+    missions = ms;
+    dchecks = {}; dc.forEach(c => { dchecks[c.date + "|" + c.mission_key] = c.done; });
+    wchecks = {}; wc.forEach(c => { wchecks[c.mission_key] = c.done; });
+    ochecks = {}; oc.forEach(c => { ochecks[c.mission_key] = c.done; });
+    render(); loadStats();
+  } catch (e) { console.error(e); }
+}
+
+function dayLabel(m, dstr) {
+  if (m.key !== "tre" || !m.meta || !m.meta.day_labels) return m.label;
+  return m.meta.day_labels[String(new Date(dstr + "T12:00:00").getDay())] || m.label;
+}
+
+function render() {
+  const t = today(), ws = weekStart(t);
+  const wsD = new Date(ws + "T12:00:00"), weD = new Date(wsD); weD.setDate(weD.getDate() + 6);
+  const fmt = d => d.getDate() + "/" + (d.getMonth()+1);
+  document.getElementById("weekLabel").textContent = "semana " + fmt(wsD) + "–" + fmt(weD);
+  const daily = missions.filter(m => m.kind === "daily");
+
+  // HOJE
+  const tl = document.getElementById("todayList"); tl.innerHTML = "";
+  daily.forEach(m => {
+    const done = !!dchecks[t + "|" + m.key];
+    tl.appendChild(questRow(m.id, dayLabel(m, t), m.xp ? "+" + m.xp + " XP" : "", done,
+      () => toggleDaily(t, m.key, !done), m.key === "tre" ? "gold" : ""));
+  });
+
+  // SEMANA grid
+  const days = []; for (let i = 0; i < 7; i++) { const d = new Date(ws + "T12:00:00"); d.setDate(d.getDate() + i); days.push(iso(d)); }
+  const names = ["seg","ter","qua","qui","sex","sáb","dom"];
+  let html = "<table><tr><th>missão</th>" + names.map((n,i) =>
+    "<th class='" + (days[i] === t ? "today" : "") + "'>" + n + "</th>").join("") + "</tr>";
+  daily.forEach(m => {
+    html += "<tr><td>" + m.label.slice(0, 22) + "</td>" + days.map(d =>
+      "<td class='" + (d === t ? "today" : "") + "'>" + (dchecks[d + "|" + m.key] ? "✓" : "·") + "</td>").join("") + "</tr>";
+  });
+  document.getElementById("weekGrid").innerHTML = html + "</table>";
+
+  // semanais / chefões / compras
+  fillList("weeklyList", missions.filter(m => m.kind === "weekly"), m => !!wchecks[m.key], m => toggleWeekly(m.key));
+  fillList("bossList", missions.filter(m => m.kind === "boss"), m => !!ochecks[m.key], m => toggleOnce(m.key));
+  fillList("shopList", missions.filter(m => m.kind === "shopping"), m => !!ochecks[m.key], m => toggleOnce(m.key), true);
+
+  // XP + streak
+  let xp = 0;
+  Object.keys(dchecks).forEach(k => { if (dchecks[k]) { const mk = k.split("|")[1];
+    const m = missions.find(x => x.key === mk); if (m) xp += m.xp; } });
+  missions.filter(m => m.kind === "weekly").forEach(m => { if (wchecks[m.key]) xp += m.xp; });
+  missions.filter(m => m.kind === "boss").forEach(m => { if (ochecks[m.key]) xp += m.xp; });
+  document.getElementById("xpNow").textContent = xp;
+  let weekXp = 0, weekMax = 0;
+  days.forEach(d => daily.forEach(m => { weekMax += m.xp; if (dchecks[d + "|" + m.key]) weekXp += m.xp; }));
+  missions.filter(m => m.kind === "weekly").forEach(m => { weekMax += m.xp; if (wchecks[m.key]) weekXp += m.xp; });
+  const pct = weekMax ? Math.round(100 * weekXp / weekMax) : 0;
+  document.getElementById("xpPct").textContent = pct + "% da semana";
+  document.getElementById("xpFill").style.width = pct + "%";
+  let streak = 0;
+  for (let i = 0; i < 70; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = iso(new Date(d.getTime() - d.getTimezoneOffset()*60000));
+    const full = CORE.every(mk => dchecks[ds + "|" + mk]);
+    if (full) streak++; else if (i === 0) continue; else break;
+  }
+  document.getElementById("flame").textContent = "🔥 " + streak;
+  const names2 = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+  const tre = missions.find(m => m.key === "tre");
+  document.getElementById("todayLine").innerHTML = "Hoje é <b>" + names2[new Date().getDay()] +
+    "</b> — " + (tre ? dayLabel(tre, t) : "");
+}
+
+function questRow(id, label, xp, done, onToggle, extraClass) {
+  const div = document.createElement("div");
+  div.className = "quest " + (extraClass || "") + (done ? " done" : "");
+  const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = done;
+  cb.onchange = onToggle;
+  const lb = document.createElement("label"); lb.innerHTML = label;
+  lb.onclick = () => cb.click();
+  div.appendChild(cb); div.appendChild(lb);
+  if (xp) { const s = document.createElement("span"); s.className = "xp"; s.textContent = xp; div.appendChild(s); }
+  return div;
+}
+function fillList(elId, ms, isDone, onToggle, showPrice) {
+  const el = document.getElementById(elId); el.innerHTML = "";
+  ms.forEach(m => {
+    const row = questRow(m.key, m.label, showPrice ? "" : (m.xp ? "+" + m.xp + " XP" : ""), isDone(m), () => onToggle(m), "p" + (m.priority || 2));
+    if (showPrice && m.meta && m.meta.price) {
+      const s = document.createElement("span"); s.className = "price"; s.textContent = m.meta.price; row.appendChild(s);
+    }
+    el.appendChild(row);
+  });
+}
+
+function syncing(on) { document.getElementById("syncDot").textContent = on ? "salvando…" : "✓ salvo";
+  if (!on) setTimeout(() => { document.getElementById("syncDot").textContent = ""; }, 1500); }
+async function upsert(path, conflict, body) {
+  syncing(true);
+  await api("/rest/v1/" + path + "?on_conflict=" + conflict, { method:"POST",
+    headers: { "Prefer": "resolution=merge-duplicates" }, body: JSON.stringify(body) });
+  syncing(false);
+}
+async function toggleDaily(date, key, val) {
+  dchecks[date + "|" + key] = val; render();
+  try { await upsert("daily_checks", "date,mission_key", { date, mission_key: key, done: val, updated_at: new Date().toISOString() }); }
+  catch (e) { dchecks[date + "|" + key] = !val; render(); }
+}
+async function toggleWeekly(key) {
+  const ws = weekStart(today()); const val = !wchecks[key]; wchecks[key] = val; render();
+  try { await upsert("weekly_checks", "week_start,mission_key", { week_start: ws, mission_key: key, done: val, updated_at: new Date().toISOString() }); }
+  catch (e) { wchecks[key] = !val; render(); }
+}
+async function toggleOnce(m) {
+  const val = !ochecks[m.key]; ochecks[m.key] = val; render();
+  try { await upsert("one_time_checks", "mission_key", { mission_key: m.key, done: val, done_at: val ? new Date().toISOString() : null }); }
+  catch (e) { ochecks[m.key] = !val; render(); }
+}
+
+async function loadStats() {
+  try {
+    const [hd, w, sc, bd] = await Promise.all([
+      api("/rest/v1/health_daily?select=date,steps&order=date.desc&limit=7"),
+      api("/rest/v1/workouts?select=date,name,volume_kg&order=date.desc&limit=1"),
+      api("/rest/v1/score_snapshots?select=comp_strength&order=date.desc&limit=1"),
+      api("/rest/v1/body?select=weight_kg&order=date.desc&limit=1"),
+    ]);
+    const el = document.getElementById("stats"); el.innerHTML = "";
+    const stat = (v, l) => { const d = document.createElement("div"); d.className = "stat";
+      d.innerHTML = "<div class='v'>" + v + "</div><div class='l'>" + l + "</div>"; el.appendChild(d); };
+    stat(hd.length && hd[0].steps != null ? hd[0].steps.toLocaleString("pt-BR") : "—", "passos (" + (hd.length ? hd[0].date.slice(8,10) + "/" + hd[0].date.slice(5,7) : "") + ")");
+    stat(w.length ? (w[0].volume_kg > 0 ? (w[0].volume_kg/1000).toFixed(1) + " t" : "⚽") : "—", "último treino " + (w.length ? w[0].date.slice(8,10) + "/" + w[0].date.slice(5,7) : ""));
+    stat(sc.length ? sc[0].comp_strength : "—", "score de força");
+    stat(bd.length ? bd[0].weight_kg + " kg" : "—", "peso");
+  } catch (e) { console.error(e); }
+}
+
+if (tokens) boot();
+</script>
+</body>
+</html>
