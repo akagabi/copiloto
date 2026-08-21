@@ -168,12 +168,21 @@ async function api(path, opts = {}, retry = true) {
   if (!r.ok) throw new Error(await r.text());
   const txt = await r.text(); return txt ? JSON.parse(txt) : null;
 }
-async function refresh() {
-  const r = await fetch(SB + "/auth/v1/token?grant_type=refresh_token", { method:"POST",
-    headers:{ "apikey": KEY, "Content-Type":"application/json" },
-    body: JSON.stringify({ refresh_token: tokens.refresh_token }) });
-  if (!r.ok) return false;
-  tokens = await r.json(); localStorage.setItem("cp_tokens", JSON.stringify(tokens)); return true;
+let refreshing = null;
+function refresh() {
+  // single-flight: chamadas paralelas compartilham o MESMO refresh — evita a
+  // rotação de refresh-token do Supabase matar a sessão (reuse detection)
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const r = await fetch(SB + "/auth/v1/token?grant_type=refresh_token", { method:"POST",
+        headers:{ "apikey": KEY, "Content-Type":"application/json" },
+        body: JSON.stringify({ refresh_token: tokens.refresh_token }) });
+      if (!r.ok) return false;
+      tokens = await r.json(); localStorage.setItem("cp_tokens", JSON.stringify(tokens)); return true;
+    } finally { setTimeout(() => { refreshing = null; }, 500); }
+  })();
+  return refreshing;
 }
 async function doLogin() {
   const msg = document.getElementById("loginMsg"); msg.textContent = "entrando…";
@@ -191,6 +200,12 @@ async function boot() {
   try {
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
+    // refresh proativo ANTES das chamadas paralelas: sessão sempre fresca,
+    // e nenhuma corrida de 401s simultâneos
+    if (tokens && tokens.refresh_token) {
+      const ok = await refresh();
+      if (!ok) { logout(); return; }
+    }
     const since = iso(new Date(Date.now() - 70*86400000));
     const ws = weekStart(today());
     const [ms, dc, wc, oc] = await Promise.all([
@@ -292,8 +307,13 @@ function fillList(elId, ms, isDone, onToggle, showPrice) {
   });
 }
 
-function syncing(on) { document.getElementById("syncDot").textContent = on ? "salvando…" : "✓ salvo";
-  if (!on) setTimeout(() => { document.getElementById("syncDot").textContent = ""; }, 1500); }
+function syncing(on, err) {
+  const el = document.getElementById("syncDot");
+  if (err) { el.textContent = "⚠️ erro ao salvar — recarrega a página"; el.style.color = "var(--accent)"; return; }
+  el.style.color = "var(--teal)";
+  el.textContent = on ? "salvando…" : "✓ salvo";
+  if (!on) setTimeout(() => { el.textContent = ""; }, 1500);
+}
 async function upsert(path, conflict, body) {
   syncing(true);
   await api("/rest/v1/" + path + "?on_conflict=" + conflict, { method:"POST",
@@ -303,17 +323,17 @@ async function upsert(path, conflict, body) {
 async function toggleDaily(date, key, val) {
   dchecks[date + "|" + key] = val; render();
   try { await upsert("daily_checks", "date,mission_key", { date, mission_key: key, done: val, updated_at: new Date().toISOString() }); }
-  catch (e) { dchecks[date + "|" + key] = !val; render(); }
+  catch (e) { dchecks[date + "|" + key] = !val; render(); syncing(false, true); }
 }
 async function toggleWeekly(key) {
   const ws = weekStart(today()); const val = !wchecks[key]; wchecks[key] = val; render();
   try { await upsert("weekly_checks", "week_start,mission_key", { week_start: ws, mission_key: key, done: val, updated_at: new Date().toISOString() }); }
-  catch (e) { wchecks[key] = !val; render(); }
+  catch (e) { wchecks[key] = !val; render(); syncing(false, true); }
 }
 async function toggleOnce(m) {
   const val = !ochecks[m.key]; ochecks[m.key] = val; render();
   try { await upsert("one_time_checks", "mission_key", { mission_key: m.key, done: val, done_at: val ? new Date().toISOString() : null }); }
-  catch (e) { ochecks[m.key] = !val; render(); }
+  catch (e) { ochecks[m.key] = !val; render(); syncing(false, true); }
 }
 
 async function loadStats() {
@@ -321,7 +341,7 @@ async function loadStats() {
     const [hd, w, sc, bd, prs] = await Promise.all([
       api("/rest/v1/health_daily?select=date,steps&order=date.desc&limit=14"),
       api("/rest/v1/workouts?select=date,volume_kg,focus&order=date.desc&limit=200"),
-      api("/rest/v1/score_snapshots?select=comp_strength&order=date.desc&limit=1"),
+      api("/rest/v1/score_snapshots?select=comp_strength,meta&order=date.desc&limit=1"),
       api("/rest/v1/body?select=weight_kg&order=date.desc&limit=2"),
       api("/rest/v1/prs?select=exercise_id"),
     ]);
@@ -358,7 +378,11 @@ async function loadStats() {
     tile((wkVol/1000).toFixed(1) + "<small> t</small>", "volume da semana", { cls: "big c-vol",
       delta: wkLift + " treino" + (wkLift !== 1 ? "s" : "") + (wkFut ? " + " + wkFut + " ⚽" : "") + " esta semana", deltaCls: "up" });
     // score / peso
-    tile(sc.length ? sc[0].comp_strength : "—", "score de força", { cls: "c-score" });
+    let scDelta = "", scL = "score de força · 1RM ÷ peso";
+    if (sc.length && sc[0].meta && sc[0].meta.components) {
+      scDelta = sc[0].meta.components.map(c => c.p.slice(0,4).toLowerCase() + " ," + String(c.x).slice(2,4)).join(" · ");
+    }
+    tile(sc.length ? sc[0].comp_strength : "—", scL, { cls: "c-score", delta: scDelta, deltaCls: "flat" });
     if (bd.length) {
       const dw = bd.length > 1 ? (bd[0].weight_kg - bd[1].weight_kg) : null;
       tile(bd[0].weight_kg + "<small> kg</small>", "peso", { cls: "c-peso",
@@ -368,7 +392,7 @@ async function loadStats() {
     // all-time + PRs
     const allVol = w.reduce((a, x) => a + (Number(x.volume_kg) || 0), 0);
     tile(Math.round(allVol/1000) + "<small> t</small>", "total já levantado", {});
-    tile(new Set(prs.map(p => p.exercise_id)).size, "recordes ativos", {});
+    tile(new Set(prs.map(p => p.exercise_id)).size, "exercícios com PR", { delta: "recorde pessoal de força (1RM estimado)", deltaCls: "flat" });
   } catch (e) { console.error(e); }
 }
 
