@@ -258,8 +258,8 @@ function render() {
 
   // semanais / chefões / compras
   fillList("weeklyList", missions.filter(m => m.kind === "weekly"), m => !!wchecks[m.key], m => toggleWeekly(m.key));
-  fillList("bossList", missions.filter(m => m.kind === "boss"), m => !!ochecks[m.key], m => toggleOnce(m.key));
-  fillList("shopList", missions.filter(m => m.kind === "shopping"), m => !!ochecks[m.key], m => toggleOnce(m.key), true);
+  fillList("bossList", missions.filter(m => m.kind === "boss"), m => !!ochecks[m.key], m => toggleOnce(m));
+  fillList("shopList", missions.filter(m => m.kind === "shopping"), m => !!ochecks[m.key], m => toggleOnce(m), true);
 
   // XP + streak
   let xp = 0;
