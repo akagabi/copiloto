@@ -144,7 +144,7 @@
     <p class="muted" style="margin-top:14px">
       Passos entram sozinhos às 23h55 (Atalho). Análises completas:
       <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.
-      <span id="logoutLink" style="float:right">v1.4 · <a href="#" onclick="logout()">sair</a></span>
+      <span id="logoutLink" style="float:right">v1.5 · <a href="#" onclick="logout()">sair</a></span>
     </p>
   </div>
 </div>
@@ -302,7 +302,7 @@ function questRow(id, label, xp, done, onToggle, extraClass) {
 function fillList(elId, ms, isDone, onToggle, showPrice) {
   const el = document.getElementById(elId); el.innerHTML = "";
   ms.forEach(m => {
-    const row = questRow(m.key, m.label, showPrice ? "" : (m.xp ? "+" + m.xp + " XP" : ""), isDone(m), () => onToggle(m), "p" + (m.priority || 2));
+    const row = questRow(m.key, m.label, (m.xp ? "+" + m.xp + " XP" : ""), isDone(m), () => onToggle(m), "p" + (m.priority || 2));
     if (showPrice && m.meta && m.meta.price) {
       const s = document.createElement("span"); s.className = "price"; s.textContent = m.meta.price; row.appendChild(s);
     }
