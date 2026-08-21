@@ -55,6 +55,9 @@
   .quest.p2 { border-left:4px solid var(--gold); }
   .quest.p3 { border-left:4px solid var(--line); }
   .quest.done label { text-decoration:line-through; opacity:.55; }
+  .quest { cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .06s ease; }
+  .quest:active { transform:scale(.985); background:var(--surface-2); }
+  .quest * { pointer-events:none; }
   input[type=checkbox] { appearance:none; -webkit-appearance:none; flex:none; width:28px; height:28px;
     border:2px solid var(--line); border-radius:9px; background:var(--surface-2); cursor:pointer; position:relative; margin:0; }
   input[type=checkbox]:checked { background:var(--accent); border-color:var(--accent); }
@@ -141,7 +144,7 @@
     <p class="muted" style="margin-top:14px">
       Passos entram sozinhos às 23h55 (Atalho). Análises completas:
       <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.
-      <span id="logoutLink" style="float:right"><a href="#" onclick="logout()">sair</a></span>
+      <span id="logoutLink" style="float:right">v1.3 · <a href="#" onclick="logout()">sair</a></span>
     </p>
   </div>
 </div>
@@ -289,11 +292,11 @@ function questRow(id, label, xp, done, onToggle, extraClass) {
   const div = document.createElement("div");
   div.className = "quest " + (extraClass || "") + (done ? " done" : "");
   const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = done;
-  cb.onchange = onToggle;
   const lb = document.createElement("label"); lb.innerHTML = label;
-  lb.onclick = () => cb.click();
   div.appendChild(cb); div.appendChild(lb);
   if (xp) { const s = document.createElement("span"); s.className = "xp"; s.textContent = xp; div.appendChild(s); }
+  // a LINHA INTEIRA é o alvo de toque — preço, XP, padding, tudo toggla
+  div.addEventListener("click", (e) => { e.preventDefault(); onToggle(); });
   return div;
 }
 function fillList(elId, ms, isDone, onToggle, showPrice) {
