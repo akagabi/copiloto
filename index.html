@@ -195,7 +195,7 @@
       <div id="invHave"></div>
       <h2><b>Setup</b> <span id="bossProgress"></span></h2>
       <div id="bossList"></div>
-      <p class="muted" style="margin-top:16px">v2.0 · <a href="#" onclick="logout()">sair</a></p>
+      <p class="muted" style="margin-top:16px">v2.1 · <a href="#" onclick="logout()">sair</a></p>
     </div>
   </div>
 </div>
@@ -306,8 +306,9 @@ function todaySchedule() {
     list.push({ kind:"evento", id:"ev" + e.id, label:e.title, time:hm, block: hm ? blockOf(hm) : "manha" });
   });
   missions.filter(m => m.kind === "daily").forEach(m => {
-    list.push({ kind:"missao", m, id:m.key, label: dayLabel(m, t), time: NOMINAL[m.anchor] || "15:00",
-      block: m.anchor || "tarde", done: !!dchecks[t + "|" + m.key], nominal:true });
+    list.push({ kind:"missao", m, id:m.key, label: dayLabel(m, t),
+      time: m.time_hint || NOMINAL[m.anchor] || "15:00", showTime: !!m.time_hint, note: m.note,
+      block: m.anchor || "tarde", done: !!dchecks[t + "|" + m.key] });
   });
   dayItems.forEach(it => {
     list.push({ kind:"item", it, id:"di" + it.id, label: it.text, time:null, block: blockOf(null), done: it.done,
@@ -397,7 +398,8 @@ function itemRow(x) {
     return div; // evento é lembrete, não checkbox
   }
   div.innerHTML = "<span class='tick" + (x.done ? " on" : "") + "'></span><span class='txt'>" + x.label +
-    (x.old ? "<small>veio de outro dia</small>" : "") + "</span>";
+    (x.note ? "<small>" + x.note + "</small>" : "") + (x.old ? "<small>veio de outro dia</small>" : "") + "</span>" +
+    (x.showTime ? "<span class='when'>" + x.time + "</span>" : "");
   div.addEventListener("click", () => {
     if (x.kind === "missao") toggleDaily(today(), x.m.key, !x.done);
     else if (x.kind === "item") toggleItem(x.it);
