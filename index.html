@@ -195,7 +195,7 @@
       <div id="invHave"></div>
       <h2><b>Setup</b> <span id="bossProgress"></span></h2>
       <div id="bossList"></div>
-      <p class="muted" style="margin-top:16px">v2.1 · <a href="#" onclick="logout()">sair</a></p>
+      <p class="muted" style="margin-top:16px">v2.2 · <a href="#" onclick="logout()">sair</a></p>
     </div>
   </div>
 </div>
@@ -534,7 +534,7 @@ document.addEventListener("keydown", e => {
 async function loadStats() {
   try {
     const [hd, w, sc, bd, prs] = await Promise.all([
-      api("/rest/v1/health_daily?select=date,steps&order=date.desc&limit=14"),
+      api("/rest/v1/health_daily?select=date,steps,weight_kg&order=date.desc&limit=14"),
       api("/rest/v1/workouts?select=date,volume_kg,focus&order=date.desc&limit=200"),
       api("/rest/v1/score_snapshots?select=comp_strength,meta&order=date.desc&limit=1"),
       api("/rest/v1/body?select=weight_kg&order=date.desc&limit=2"),
@@ -575,10 +575,15 @@ async function loadStats() {
       scDelta = sc[0].meta.components.map(c => c.p.slice(0,4).toLowerCase() + " ," + c.x.toFixed(2).slice(2)).join(" · ");
     }
     tile(sc.length ? sc[0].comp_strength : "—", "score de força · 1RM ÷ peso", { cls: "c-score", delta: scDelta, deltaCls: "flat" });
-    if (bd.length) {
-      const dw = bd.length > 1 ? (bd[0].weight_kg - bd[1].weight_kg) : null;
-      tile(bd[0].weight_kg + "<small> kg</small>", "peso", { cls: "c-peso",
-        delta: dw === null ? "registra 1×/semana" : (dw >= 0 ? "▲ +" : "▼ ") + Math.abs(dw).toFixed(1) + " kg",
+    const wsc = hd.filter(x => x.weight_kg != null);           // balança (via Atalho)
+    const wSeries = wsc.length ? wsc.map(x => Number(x.weight_kg)) : bd.map(x => Number(x.weight_kg));
+    if (wSeries.length) {
+      const cur = wSeries[0];
+      const dw = wSeries.length > 1 ? cur - wSeries[wSeries.length - 1] : null;
+      const dias = wSeries.length > 1 ? wSeries.length : 0;
+      tile(cur.toFixed(1) + "<small> kg</small>", "peso", { cls: "c-peso",
+        delta: dw === null ? "1ª medida — a tendência começa aqui"
+             : (dw >= 0 ? "▲ +" : "▼ ") + Math.abs(dw).toFixed(1) + " kg em " + dias + "d",
         deltaCls: dw === null ? "flat" : (dw <= 0 ? "up" : "flat") });
     } else tile("—", "peso", { cls: "c-peso" });
     const allVol = w.reduce((a, x) => a + (Number(x.volume_kg) || 0), 0);
