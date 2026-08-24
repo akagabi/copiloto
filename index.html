@@ -52,6 +52,8 @@
   .next-row .eta { font-family:"Chakra Petch",sans-serif; font-size:12px; color:var(--ink-3); font-weight:600; }
 
   .capture { display:flex; gap:8px; margin-top:14px; }
+  .capture input[type=number] { flex:1; padding:13px 14px; border-radius:14px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:15px; min-width:0; }
   .capture input[type=text] { flex:1; padding:13px 14px; border-radius:14px; border:1px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:15px; min-width:0; }
   .capture input[type=date] { width:46px; padding:0 4px; border-radius:14px; border:1px solid var(--line);
@@ -183,6 +185,10 @@
     <div class="screen" id="s-corpo">
       <h2 style="margin-top:6px"><b>Central</b> · teus números, ao vivo</h2>
       <div class="stats" id="stats"></div>
+      <div class="capture" style="margin-top:14px">
+        <input type="number" inputmode="decimal" step="0.1" id="wIn" placeholder="peso de hoje (kg)…">
+        <button onclick="saveWeight()" aria-label="salvar peso">✓</button>
+      </div>
       <p class="muted" style="margin-top:14px">Passos entram às 23h55 (Atalho). Análises completas no
         <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.</p>
     </div>
@@ -195,7 +201,7 @@
       <div id="invHave"></div>
       <h2><b>Setup</b> <span id="bossProgress"></span></h2>
       <div id="bossList"></div>
-      <p class="muted" style="margin-top:16px">v2.2 · <a href="#" onclick="logout()">sair</a></p>
+      <p class="muted" style="margin-top:16px">v2.3 · <a href="#" onclick="logout()">sair</a></p>
     </div>
   </div>
 </div>
@@ -529,6 +535,19 @@ async function addItem() {
 document.addEventListener("keydown", e => {
   if (e.key === "Enter" && document.activeElement === document.getElementById("capText")) addItem();
 });
+
+async function saveWeight() {
+  const el = document.getElementById("wIn");
+  const v = parseFloat(String(el.value).replace(",", "."));
+  if (!v || v < 30 || v > 250) { el.value = ""; el.placeholder = "valor inválido — tenta de novo"; return; }
+  el.value = ""; el.placeholder = "salvando…";
+  try {
+    await upsert("health_daily", "date", { date: today(), weight_kg: v });
+    el.placeholder = "✓ " + v.toFixed(1) + " kg salvo";
+    loadStats();
+    setTimeout(() => { el.placeholder = "peso de hoje (kg)…"; }, 2500);
+  } catch (e) { el.placeholder = "erro ao salvar"; syncing(false, true); }
+}
 
 /* ---------- corpo ---------- */
 async function loadStats() {
