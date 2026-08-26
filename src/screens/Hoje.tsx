@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, Row, SectionTitle } from "../components/ui";
+import { NowCard, Pill, SmokeFree } from "../components/HeroStatus";
 import { upsert, patch, insert } from "../lib/api";
 import { CORE, DIAS, MESES, today, weekStart } from "../lib/util";
 import type { CalEvent, DayItem, Mission } from "../lib/data";
@@ -8,10 +9,10 @@ const BLOCKS: [string, string, number, number][] = [
   ["manha", "🌅 Manhã", 6, 12], ["tarde", "☀️ Tarde", 12, 18], ["noite", "🌙 Noite", 18, 24],
 ];
 const NOMINAL: Record<string, string> = { manha: "08:00", tarde: "15:00", noite: "21:30" };
-const BORDER: Record<string, string> = {
-  treino: "border-l-amber-500", sono: "border-l-sky-500", nutricao: "border-l-emerald-500",
-  mente: "border-l-violet-500", saude: "border-l-rose-500", corpo: "border-l-emerald-500",
-  evento: "border-l-rose-500", vida: "border-l-violet-500",
+const ACCENT: Record<string, string> = {
+  treino: "bg-amber-500", sono: "bg-sky-500", nutricao: "bg-emerald-500",
+  mente: "bg-violet-500", saude: "bg-rose-500", corpo: "bg-emerald-500",
+  evento: "bg-rose-500", vida: "bg-violet-500",
 };
 
 type Entry = {
@@ -33,7 +34,6 @@ function dayLabel(m: Mission, d: string) {
 export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
   const [text, setText] = useState("");
   const [date, setDate] = useState(today());
-  const [busy, setBusy] = useState("");
   const t = today();
 
   const entries: Entry[] = [];
@@ -63,7 +63,6 @@ export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
   const eta = next ? next.min! - now : 0;
 
   async function toggleDaily(m: Mission, done: boolean) {
-    setBusy(m.key);
     st.daily[`${t}|${m.key}`] = !done; reload();
     try {
       await upsert("daily_checks", "date,mission_key",
@@ -76,7 +75,6 @@ export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
         }
       }
     } catch { st.daily[`${t}|${m.key}`] = done; reload(); }
-    setBusy("");
   }
   async function toggleItem(it: DayItem) {
     it.done = !it.done; reload();
@@ -113,43 +111,33 @@ export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
 
   return (
     <>
-      <header className="flex items-center justify-between px-1 pb-3 pt-0.5">
+      <header className="flex items-center justify-between px-1 pb-3.5 pt-0.5">
         <div>
-          <div className="font-display text-xl font-bold capitalize">{DIAS[d.getDay()]}</div>
-          <div className="text-[11px] font-semibold tracking-wide text-muted">
+          <div className="font-display text-[22px] font-bold capitalize leading-none tracking-tight">{DIAS[d.getDay()]}</div>
+          <div className="mt-1 text-[11px] font-semibold tracking-wide text-muted">
             {d.getDate()} de {MESES[d.getMonth()]}
           </div>
         </div>
         <div className="flex gap-1.5">
-          <span className="rounded-full border border-border bg-card px-2.5 py-1.5 font-display text-[11.5px] font-bold text-fg2">
-            🏆 <b className="text-emerald-500">{wins}</b> hoje
-          </span>
-          <span className="rounded-full border border-border bg-card px-2.5 py-1.5 font-display text-[11.5px] font-bold text-fg2">
-            consist. <b className="text-emerald-500">{consist}%</b>
-          </span>
+          <Pill tone="emerald">🏆 {wins} hoje</Pill>
+          <Pill>{consist}% consist.</Pill>
         </div>
       </header>
 
-      <Card glow className="px-4.5 py-4">
-        <div className="font-display text-[10.5px] font-bold tracking-[0.14em] text-primary">AGORA</div>
-        <div className="mt-0.5 text-[19px] font-bold">{cur ? cur.label : "Tudo em dia 🙌"}</div>
-        {next && (
-          <div className="mt-2.5 flex items-baseline justify-between border-t border-dashed border-border pt-2.5 text-[13.5px] text-fg2">
-            <span>depois: {next.label}</span>
-            <span className="font-display text-xs font-semibold text-muted">
-              {eta >= 60 ? `em ${Math.floor(eta / 60)}h${String(eta % 60).padStart(2, "0")}` : `em ${eta} min`}
-            </span>
-          </div>
-        )}
-      </Card>
+      <div className="grid gap-3">
+        <NowCard now={cur ? cur.label : "Tudo em dia 🙌"} next={next?.label} eta={next ? eta : undefined} />
+        <SmokeFree days={st.smokeDays} best={st.smokeBest} />
+      </div>
 
-      <div className="mt-3.5 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <input value={text} onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()} placeholder="+ adicionar ao dia…"
-          className="min-w-0 flex-1 rounded-2xl border border-border bg-card px-3.5 py-3 text-[15px] outline-none placeholder:text-muted focus:border-primary" />
+          className="min-w-0 flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-[15px] outline-none
+                     transition placeholder:text-muted focus:border-primary/60 focus:ring-4 focus:ring-primary/10" />
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
           className="w-[46px] rounded-2xl border border-border bg-card px-1 text-[11px] text-muted outline-none" />
-        <button onClick={add} className="rounded-2xl bg-primary px-5 text-[22px] font-bold text-white active:scale-95">+</button>
+        <button onClick={add}
+          className="rounded-2xl bg-primary px-5 text-[22px] font-bold text-white transition active:scale-95">+</button>
       </div>
 
       {BLOCKS.map(([bk, bname]) => {
@@ -164,11 +152,10 @@ export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
               {isNow && <span className="font-display text-[10px] font-bold tracking-[0.1em] text-primary">· AGORA</span>}
             </div>
             {list.map((e) => (
-              <Row key={e.id} done={e.done} color={BORDER[e.domain]}
+              <Row key={e.id} done={e.done} accent={ACCENT[e.domain]}
                 title={e.kind === "evento" ? <b>📌 {e.label}</b> : e.label}
                 sub={e.kind === "evento" ? "compromisso de hoje" : e.old ? "veio de outro dia" : e.note}
                 right={e.showTime ? e.time : undefined}
-                dim={busy === e.id}
                 onClick={e.kind === "evento" ? undefined : () =>
                   e.kind === "missao" ? toggleDaily(e.raw, e.done) : toggleItem(e.raw)} />
             ))}
@@ -178,7 +165,7 @@ export default function Hoje({ st, reload }: { st: any; reload: () => void }) {
 
       <SectionTitle>Da semana</SectionTitle>
       {st.missions.filter((m: Mission) => m.kind === "weekly").map((m: Mission) => (
-        <Row key={m.key} done={!!st.weekly[m.key]} color={BORDER[m.domain]} title={m.label}
+        <Row key={m.key} done={!!st.weekly[m.key]} accent={ACCENT[m.domain]} title={m.label}
           onClick={() => toggleWeekly(m)} />
       ))}
     </>

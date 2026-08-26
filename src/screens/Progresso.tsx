@@ -5,12 +5,22 @@ import { Card, SectionTitle, Stat } from "../components/ui";
 import { dm, iso, today, weekStart, cn } from "../lib/util";
 import type { Mission } from "../lib/data";
 
-const TT = {
-  contentStyle: { background: "var(--color-card)", border: "1px solid var(--color-border)",
-    borderRadius: 12, fontSize: 12, color: "var(--color-fg)" },
-  labelStyle: { color: "var(--color-muted)", fontSize: 11 },
-  cursor: { fill: "rgba(127,127,127,0.08)" },
-};
+function Tip({ active, payload, label, unit, name }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-2xl border border-border bg-card/95 px-3 py-2 shadow-xl backdrop-blur">
+      <div className="font-display text-[10px] font-bold uppercase tracking-wider text-muted">{label}</div>
+      <div className="mt-0.5 flex items-baseline gap-1">
+        <span className="font-display text-lg font-bold text-fg">
+          {typeof payload[0].value === "number" ? payload[0].value.toLocaleString("pt-BR") : payload[0].value}
+        </span>
+        <span className="text-[11px] font-semibold text-muted">{unit}</span>
+      </div>
+      <div className="text-[10px] text-muted">{name}</div>
+    </div>
+  );
+}
+const CURSOR = { fill: "rgba(127,127,127,0.07)", radius: 8 };
 
 export default function Progresso({ body, st }: { body: any; st: any }) {
   if (!body) return <p className="mt-8 text-center text-sm text-muted">carregando…</p>;
@@ -69,13 +79,13 @@ export default function Progresso({ body, st }: { body: any; st: any }) {
       </div>
 
       <SectionTitle hint="· toneladas">Volume por semana</SectionTitle>
-      <Card className="pb-2 pl-0 pr-3">
+      <Card className="px-1 pb-1 pt-3">
         <ResponsiveContainer width="100%" height={170}>
           <BarChart data={volData} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
             <XAxis dataKey="semana" tickLine={false} axisLine={false} fontSize={10} stroke="var(--color-muted)" />
             <YAxis width={26} tickLine={false} axisLine={false} fontSize={10} stroke="var(--color-muted)" />
-            <Tooltip {...TT} formatter={(v: any) => [`${v} t`, "volume"]} />
+            <Tooltip cursor={CURSOR} content={<Tip unit="t" name="volume levantado" />} />
             <Bar dataKey="t" radius={[6, 6, 3, 3]} isAnimationActive={false}>
               {volData.map((d, i) => (
                 <Cell key={i} fill={d.atual ? "var(--color-amber)" : "var(--color-amber-dim)"} />
@@ -86,7 +96,7 @@ export default function Progresso({ body, st }: { body: any; st: any }) {
       </Card>
 
       <SectionTitle hint="· 14 dias">Passos</SectionTitle>
-      <Card className="pb-2 pl-0 pr-3">
+      <Card className="px-1 pb-1 pt-3">
         <ResponsiveContainer width="100%" height={150}>
           <BarChart data={stepsData} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
@@ -94,7 +104,7 @@ export default function Progresso({ body, st }: { body: any; st: any }) {
               interval="preserveStartEnd" />
             <YAxis width={30} tickLine={false} axisLine={false} fontSize={10} stroke="var(--color-muted)"
               tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-            <Tooltip {...TT} formatter={(v: any) => [v.toLocaleString("pt-BR"), "passos"]} />
+            <Tooltip cursor={CURSOR} content={<Tip unit="passos" name="no dia" />} />
             <Bar dataKey="passos" radius={[6, 6, 3, 3]} isAnimationActive={false}>
               {stepsData.map((d: any, i: number) => (
                 <Cell key={i} fill={d.hoje ? "var(--color-emerald)" : "var(--color-emerald-dim)"} />
@@ -105,7 +115,7 @@ export default function Progresso({ body, st }: { body: any; st: any }) {
       </Card>
 
       <SectionTitle hint="· tendência">Peso</SectionTitle>
-      <Card className="pb-2 pl-0 pr-3">
+      <Card className="px-1 pb-1 pt-3">
         {weightData.length < 2 ? (
           <p className="px-3 py-6 text-sm text-muted">pesa alguns dias que a curva aparece aqui</p>
         ) : (
@@ -121,7 +131,7 @@ export default function Progresso({ body, st }: { body: any; st: any }) {
               <XAxis dataKey="dia" tickLine={false} axisLine={false} fontSize={10} stroke="var(--color-muted)" />
               <YAxis width={34} domain={["dataMin - 1", "dataMax + 1"]} tickLine={false} axisLine={false}
                 fontSize={10} stroke="var(--color-muted)" />
-              <Tooltip {...TT} formatter={(v: any) => [`${v} kg`, "peso"]} />
+              <Tooltip cursor={CURSOR} content={<Tip unit="kg" name="peso corporal" />} />
               <Area isAnimationActive={false} type="monotone" dataKey="kg" stroke="var(--color-sky)" strokeWidth={2.5}
                 fill="url(#wg)" dot={{ r: 3 }} activeDot={{ r: 5 }} />
             </AreaChart>

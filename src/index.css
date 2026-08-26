@@ -43,3 +43,19 @@ html { background: var(--color-bg); }
 body { margin: 0; background: var(--color-bg); color: var(--color-fg);
   font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 * { -webkit-tap-highlight-color: transparent; }
+
+/* tokens que os componentes shadcn esperam, mapeados no nosso tema */
+@layer base {
+  :root {
+    --background: var(--color-bg); --foreground: var(--color-fg);
+    --card: var(--color-card); --card-foreground: var(--color-fg);
+    --popover: var(--color-card); --popover-foreground: var(--color-fg);
+    --primary: var(--color-primary); --primary-foreground: #fff;
+    --secondary: var(--color-surface2); --secondary-foreground: var(--color-fg);
+    --muted: var(--color-surface2); --muted-foreground: var(--color-muted);
+    --accent: var(--color-surface2); --accent-foreground: var(--color-fg);
+    --destructive: var(--color-primary);
+    --border: var(--color-border); --input: var(--color-border); --ring: var(--color-primary);
+    --radius: 1rem;
+  }
+}

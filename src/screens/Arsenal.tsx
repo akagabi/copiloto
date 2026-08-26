@@ -2,7 +2,7 @@ import { Row, SectionTitle } from "../components/ui";
 import { patch, upsert } from "../lib/api";
 import type { InvItem, Mission } from "../lib/data";
 
-const PRI: Record<number, string> = { 1: "border-l-rose-500", 2: "border-l-amber-500", 3: "border-l-border" };
+const PRI: Record<number, string> = { 1: "bg-rose-500", 2: "bg-amber-500", 3: "bg-border" };
 
 export default function Arsenal({ st, reload }: { st: any; reload: () => void }) {
   const inv: InvItem[] = st.inventory;
@@ -53,19 +53,19 @@ export default function Arsenal({ st, reload }: { st: any; reload: () => void })
     <>
       <SectionTitle hint="· toca quando conseguir">Preciso</SectionTitle>
       {inv.filter((i) => i.status === "preciso").map((it) => (
-        <Row key={it.key} color={PRI[it.priority] || PRI[2]} title={it.name}
+        <Row key={it.key} accent={PRI[it.priority] || PRI[2]} title={it.name}
           right={sideOf(it)} onClick={() => acquire(it)} />
       ))}
       <SectionTitle hint="· consumíveis avisam quando repor">Tenho</SectionTitle>
       {inv.filter((i) => i.status === "tenho").map((it) => (
-        <Row key={it.key} color={PRI[it.priority] || PRI[2]} title={it.name}
+        <Row key={it.key} accent={PRI[it.priority] || PRI[2]} title={it.name}
           sub={it.kind === "consumable" ? "toca p/ registrar reposição" : undefined}
           right={sideOf(it)} onClick={it.kind === "consumable" ? () => restock(it) : undefined} />
       ))}
       <SectionTitle hint={`· ${doneCount}/${bosses.length}`}>Setup</SectionTitle>
       {bosses.map((m) => {
         const s = dueAgain(m);
-        return <Row key={m.key} done={s.done} color="border-l-rose-500" title={m.label}
+        return <Row key={m.key} done={s.done} accent="bg-rose-500" title={m.label}
           sub={s.note || m.note} onClick={() => toggleBoss(m)} />;
       })}
       <div className="h-4" />

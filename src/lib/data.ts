@@ -23,7 +23,7 @@ export type PR = { exercise_name: string; value: number; achieved_at: string };
 export async function loadCore() {
   const t = today(), ws = weekStart(t);
   const since = iso(new Date(Date.now() - 40 * 86400000));
-  const [missions, dc, wc, oc, items, events, inventory] = await Promise.all([
+  const [missions, dc, wc, oc, items, events, inventory, smoke] = await Promise.all([
     api<Mission[]>("/rest/v1/missions?active=eq.true&order=sort"),
     api<any[]>(`/rest/v1/daily_checks?date=gte.${since}&select=date,mission_key,done`),
     api<any[]>(`/rest/v1/weekly_checks?week_start=eq.${ws}&select=mission_key,done`),
@@ -31,14 +31,22 @@ export async function loadCore() {
     api<DayItem[]>(`/rest/v1/day_items?or=(date.eq.${t},and(date.lt.${t},done.is.false))&order=created_at`),
     api<CalEvent[]>(`/rest/v1/calendar_events?date=eq.${t}&order=start_ts`),
     api<InvItem[]>("/rest/v1/inventory?order=sort"),
+    api<{ date: string }[]>("/rest/v1/smoke_events?select=date&order=date"),
   ]);
+  const dates = smoke.map((s) => s.date).sort();
+  const last = dates[dates.length - 1];
+  const dayDiff = (a: string, b: string) =>
+    Math.round((+new Date(b + "T12:00:00") - +new Date(a + "T12:00:00")) / 86400000);
+  const smokeDays = last ? dayDiff(last, today()) : 0;
+  let smokeBest = smokeDays;
+  for (let i = 1; i < dates.length; i++) smokeBest = Math.max(smokeBest, dayDiff(dates[i - 1], dates[i]) - 1);
   const daily: Record<string, boolean> = {};
   dc.forEach((c) => (daily[`${c.date}|${c.mission_key}`] = c.done));
   const weekly: Record<string, boolean> = {};
   wc.forEach((c) => (weekly[c.mission_key] = c.done));
   const once: Record<string, { done: boolean; done_at: string | null }> = {};
   oc.forEach((c) => (once[c.mission_key] = { done: c.done, done_at: c.done_at }));
-  return { missions, daily, weekly, once, items, events, inventory };
+  return { missions, daily, weekly, once, items, events, inventory, smokeDays, smokeBest };
 }
 
 export async function loadBody() {
