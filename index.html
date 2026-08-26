@@ -120,9 +120,21 @@
   nav { position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; gap:8px;
     padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:color-mix(in srgb,var(--bg) 88%,transparent);
     backdrop-filter:blur(14px); border-top:1px solid var(--line); }
-  nav button { flex:1; max-width:150px; padding:11px 0; border-radius:16px; border:none; background:transparent;
+  nav button { flex:1; max-width:120px; padding:11px 0; border-radius:16px; border:none; background:transparent;
     color:var(--ink-3); font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:12.5px;
-    letter-spacing:.05em; cursor:pointer; }
+    letter-spacing:.03em; cursor:pointer; font-size:11.5px; }
+  .chart-lbl { display:flex; justify-content:space-between; font-family:"Chakra Petch",sans-serif;
+    font-size:10px; color:var(--ink-3); margin-top:6px; }
+  .hb-row { display:flex; align-items:center; gap:4px; margin-bottom:5px; min-width:420px; }
+  .hb-row .n { width:96px; font-size:11.5px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hb-row i { flex:1; height:18px; border-radius:4px; background:var(--surface-2); display:block; }
+  .hb-row i.on { background:var(--teal); }
+  .hb-row i.today { outline:2px solid var(--accent); outline-offset:1px; }
+  .pr { display:flex; align-items:baseline; gap:10px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:10px 14px; margin-bottom:6px; }
+  .pr .n { flex:1; font-size:13.5px; color:var(--ink-2); }
+  .pr .v { font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:16px; }
+  .pr .d { font-family:"Chakra Petch",sans-serif; font-size:10.5px; color:var(--ink-3); }
   nav button.on { background:var(--surface); color:var(--ink); border:1px solid var(--line); }
 
   .screen { display:none; } .screen.on { display:block; }
@@ -193,6 +205,23 @@
         <a href="https://claude.ai/code/artifact/56cc3f59-2f9a-4436-9b01-39bfab6996c3">dashboard</a>.</p>
     </div>
 
+    <!-- PROGRESSO -->
+    <div class="screen" id="s-prog">
+      <h2 style="margin-top:6px"><b>Semana</b> · vs a anterior</h2>
+      <div class="stats" id="wkCompare"></div>
+      <h2><b>Volume por semana</b> · toneladas levantadas</h2>
+      <div class="card" id="chVol"></div>
+      <h2><b>Passos</b> · últimos 14 dias</h2>
+      <div class="card" id="chSteps"></div>
+      <h2><b>Peso</b> · tendência</h2>
+      <div class="card" id="chWeight"></div>
+      <h2><b>Hábitos</b> · últimos 14 dias</h2>
+      <div class="card" id="chHabits" style="overflow-x:auto"></div>
+      <h2><b>Recordes</b> · 1RM estimado</h2>
+      <div id="prList"></div>
+      <p class="muted" style="margin-top:16px">Tudo calculado do teu banco — enche sozinho conforme os dias passam.</p>
+    </div>
+
     <!-- ARSENAL -->
     <div class="screen" id="s-arsenal">
       <h2 style="margin-top:6px"><b>Preciso</b> · toca quando conseguir</h2>
@@ -201,7 +230,7 @@
       <div id="invHave"></div>
       <h2><b>Setup</b> <span id="bossProgress"></span></h2>
       <div id="bossList"></div>
-      <p class="muted" style="margin-top:16px">v2.3 · <a href="#" onclick="logout()">sair</a></p>
+      <p class="muted" style="margin-top:16px">v2.4 · <a href="#" onclick="logout()">sair</a></p>
     </div>
   </div>
 </div>
@@ -209,6 +238,7 @@
 <nav id="nav" style="display:none">
   <button class="on" data-s="hoje" onclick="show('hoje')">HOJE</button>
   <button data-s="corpo" onclick="show('corpo')">CORPO</button>
+  <button data-s="prog" onclick="show('prog')">PROGRESSO</button>
   <button data-s="arsenal" onclick="show('arsenal')">ARSENAL</button>
 </nav>
 
@@ -293,6 +323,8 @@ function show(s) {
   document.querySelectorAll(".screen").forEach(el => el.classList.remove("on"));
   document.getElementById("s-" + s).classList.add("on");
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.s === s));
+  window.scrollTo(0, 0);
+  if (s === "prog") loadProgress();
 }
 
 /* ---------- schedule ---------- */
@@ -547,6 +579,128 @@ async function saveWeight() {
     loadStats();
     setTimeout(() => { el.placeholder = "peso de hoje (kg)…"; }, 2500);
   } catch (e) { el.placeholder = "erro ao salvar"; syncing(false, true); }
+}
+
+/* ---------- gráficos (SVG puro) ---------- */
+function barChart(el, data, opts) {
+  // data: [{label, value, hot}]
+  const W = 320, H = 110, pad = 2;
+  const mx = Math.max(...data.map(d => d.value), opts.min || 1);
+  const bw = W / Math.max(data.length, 1);
+  let svg = "<svg viewBox='0 0 " + W + " " + (H + 16) + "' style='width:100%;height:auto'>";
+  data.forEach((d, i) => {
+    const h = Math.max(2, Math.round(H * d.value / mx));
+    const x = i * bw + pad, y = H - h;
+    svg += "<rect x='" + x + "' y='" + y + "' width='" + (bw - pad * 2) + "' height='" + h +
+      "' rx='3' fill='" + (d.hot ? opts.color : "color-mix(in srgb," + opts.color + " 42%,transparent)") + "'></rect>";
+    if (d.value > 0 && (opts.showVals || d.hot)) {
+      svg += "<text x='" + (x + (bw - pad*2)/2) + "' y='" + (y - 3) + "' text-anchor='middle' font-size='9' " +
+        "fill='var(--ink-3)' font-family='Chakra Petch'>" + (opts.fmt ? opts.fmt(d.value) : d.value) + "</text>";
+    }
+  });
+  svg += "</svg>";
+  el.innerHTML = svg + "<div class='chart-lbl'><span>" + (data[0] ? data[0].label : "") +
+    "</span><span>" + (data.length > 1 ? data[data.length-1].label : "") + "</span></div>";
+}
+function lineChart(el, pts, opts) {
+  if (pts.length < 2) {
+    el.innerHTML = "<p class='muted' style='margin:6px 2px'>" + (opts.empty || "precisa de mais medidas") + "</p>";
+    return;
+  }
+  const W = 320, H = 100;
+  const vals = pts.map(p => p.value);
+  const lo = Math.min(...vals), hi = Math.max(...vals), rng = (hi - lo) || 1;
+  const X = i => (i / (pts.length - 1)) * (W - 8) + 4;
+  const Y = v => H - 10 - ((v - lo) / rng) * (H - 26);
+  let d = "", area = "";
+  pts.forEach((p, i) => { d += (i ? " L" : "M") + X(i).toFixed(1) + " " + Y(p.value).toFixed(1); });
+  area = d + " L" + X(pts.length-1).toFixed(1) + " " + H + " L" + X(0).toFixed(1) + " " + H + " Z";
+  let svg = "<svg viewBox='0 0 " + W + " " + (H + 14) + "' style='width:100%;height:auto'>";
+  svg += "<path d='" + area + "' fill='color-mix(in srgb," + opts.color + " 14%,transparent)'></path>";
+  svg += "<path d='" + d + "' fill='none' stroke='" + opts.color + "' stroke-width='2' stroke-linejoin='round'></path>";
+  const last = pts.length - 1;
+  svg += "<circle cx='" + X(last).toFixed(1) + "' cy='" + Y(pts[last].value).toFixed(1) + "' r='4' fill='" + opts.color + "'></circle>";
+  svg += "<text x='" + (X(last) - 6).toFixed(1) + "' y='" + (Y(pts[last].value) - 8).toFixed(1) +
+    "' text-anchor='end' font-size='11' font-weight='700' fill='var(--ink)' font-family='Chakra Petch'>" +
+    (opts.fmt ? opts.fmt(pts[last].value) : pts[last].value) + "</text>";
+  svg += "</svg>";
+  el.innerHTML = svg + "<div class='chart-lbl'><span>" + pts[0].label + "</span><span>" + pts[last].label + "</span></div>";
+}
+
+async function loadProgress() {
+  try {
+    const [w, hd, dc, prs, sc] = await Promise.all([
+      api("/rest/v1/workouts?select=date,volume_kg,focus&order=date"),
+      api("/rest/v1/health_daily?select=date,steps,weight_kg,body_fat_pct&order=date"),
+      api("/rest/v1/daily_checks?select=date,mission_key,done&order=date"),
+      api("/rest/v1/prs?select=exercise_name,value,achieved_at&kind=eq.e1rm&order=value.desc"),
+      api("/rest/v1/score_snapshots?select=date,comp_strength&order=date"),
+    ]);
+    const t = today(), ws = weekStart(t);
+    const prevWs = iso(new Date(new Date(ws + "T12:00:00").getTime() - 7*86400000));
+    const cmp = (arr, from, to) => arr.filter(x => x.date >= from && (!to || x.date < to));
+    const thisW = cmp(w, ws), lastW = cmp(w, prevWs, ws);
+    const volW = a => a.reduce((s,x) => s + (Number(x.volume_kg)||0), 0)/1000;
+    const liftW = a => a.filter(x => Number(x.volume_kg) > 0).length;
+    const stepsAvg = a => a.length ? Math.round(a.reduce((s,x)=>s+(x.steps||0),0)/a.length) : 0;
+    const el = document.getElementById("wkCompare"); el.innerHTML = "";
+    const card = (v, l, d, cls) => {
+      const n = document.createElement("div"); n.className = "stat " + (cls||"");
+      n.innerHTML = "<div class='v'>" + v + "</div><div class='l'>" + l + "</div>" +
+        (d ? "<div class='delta " + d[1] + "'>" + d[0] + "</div>" : "");
+      el.appendChild(n);
+    };
+    const dv = volW(thisW) - volW(lastW);
+    card(volW(thisW).toFixed(1) + "<small> t</small>", "volume", 
+      [lastW.length ? (dv>=0?"▲ +":"▼ ") + Math.abs(dv).toFixed(1) + " t vs semana passada" : "1ª semana medida",
+       lastW.length ? (dv>=0?"up":"down") : "flat"], "wide c-vol");
+    const dl = liftW(thisW) - liftW(lastW);
+    card(liftW(thisW), "treinos", [lastW.length ? (dl>=0?"▲ +":"▼ ") + Math.abs(dl) : "—", dl>=0?"up":"down"], "c-score");
+    const sa = stepsAvg(cmp(hd, ws)), sl = stepsAvg(cmp(hd, prevWs, ws));
+    card(sa ? (sa/1000).toFixed(1) + "<small>k</small>" : "—", "passos/dia",
+      [sl ? ((sa-sl)>=0?"▲ +":"▼ ") + Math.abs(Math.round((sa-sl)/100)/10) + "k" : "—", sa>=sl?"up":"down"], "c-steps");
+
+    // volume por semana (8 semanas)
+    const weeks = {};
+    w.forEach(x => { const k = weekStart(x.date); weeks[k] = (weeks[k]||0) + (Number(x.volume_kg)||0)/1000; });
+    const wkKeys = Object.keys(weeks).sort().slice(-8);
+    barChart(document.getElementById("chVol"),
+      wkKeys.map(k => ({ label: k.slice(8,10)+"/"+k.slice(5,7), value: +weeks[k].toFixed(1), hot: k === ws })),
+      { color: "var(--gold)", fmt: v => v.toFixed(1), showVals: true });
+
+    // passos 14d
+    const last14 = hd.slice(-14);
+    barChart(document.getElementById("chSteps"),
+      last14.map(x => ({ label: x.date.slice(8,10)+"/"+x.date.slice(5,7), value: x.steps||0, hot: x.date === t })),
+      { color: "var(--teal)", fmt: v => (v/1000).toFixed(0)+"k" });
+
+    // peso
+    lineChart(document.getElementById("chWeight"),
+      hd.filter(x => x.weight_kg != null).map(x => ({ label: x.date.slice(8,10)+"/"+x.date.slice(5,7), value: Number(x.weight_kg) })),
+      { color: "var(--blue)", fmt: v => v.toFixed(1)+" kg", empty: "pesa alguns dias que a curva aparece aqui" });
+
+    // hábitos 14d
+    const hb = document.getElementById("chHabits"); hb.innerHTML = "";
+    const days14 = []; for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i);
+      days14.push(iso(new Date(d.getTime() - d.getTimezoneOffset()*60000))); }
+    const chk = {}; dc.forEach(c => { chk[c.date+"|"+c.mission_key] = c.done; });
+    missions.filter(m => m.kind === "daily").forEach(m => {
+      const row = document.createElement("div"); row.className = "hb-row";
+      row.innerHTML = "<span class='n'>" + m.label.replace(/[^\p{L}\p{N} ].*/u,"").trim().slice(0,14) + "</span>" +
+        days14.map(d => "<i class='" + (chk[d+"|"+m.key] ? "on " : "") + (d===t ? "today" : "") + "'></i>").join("");
+      hb.appendChild(row);
+    });
+
+    // recordes
+    const pl = document.getElementById("prList"); pl.innerHTML = "";
+    prs.slice(0, 10).forEach(p => {
+      const d = document.createElement("div"); d.className = "pr";
+      d.innerHTML = "<span class='n'>" + p.exercise_name + "</span><span class='v'>" + Number(p.value).toFixed(0) +
+        "<small style=\"font-size:11px;color:var(--ink-3)\"> kg</small></span><span class='d'>" +
+        (p.achieved_at ? String(p.achieved_at).slice(8,10)+"/"+String(p.achieved_at).slice(5,7) : "") + "</span>";
+      pl.appendChild(d);
+    });
+  } catch (e) { console.error(e); }
 }
 
 /* ---------- corpo ---------- */
