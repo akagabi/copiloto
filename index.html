@@ -124,12 +124,31 @@
     color:var(--ink-3); font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:12.5px;
     letter-spacing:.03em; cursor:pointer; font-size:11.5px; }
   .chart-lbl { display:flex; justify-content:space-between; font-family:"Chakra Petch",sans-serif;
-    font-size:10px; color:var(--ink-3); margin-top:6px; }
-  .hb-row { display:flex; align-items:center; gap:4px; margin-bottom:5px; min-width:420px; }
-  .hb-row .n { width:96px; font-size:11.5px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .hb-row i { flex:1; height:18px; border-radius:4px; background:var(--surface-2); display:block; }
+    font-size:10.5px; color:var(--ink-3); margin-top:8px; }
+  .bars { display:flex; align-items:flex-end; gap:5px; height:132px; }
+  .bar-col { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center;
+    height:100%; gap:5px; min-width:0; }
+  .bar-v { font-family:"Chakra Petch",sans-serif; font-size:10.5px; font-weight:700; color:var(--ink-3);
+    white-space:nowrap; }
+  .bar-col.hot .bar-v { color:var(--ink); }
+  .bar-r { width:100%; border-radius:5px 5px 2px 2px; min-height:3px; }
+  .bar-x { display:flex; gap:5px; margin-top:6px; }
+  .bar-x span { flex:1; text-align:center; font-family:"Chakra Petch",sans-serif; font-size:9.5px;
+    color:var(--ink-3); min-width:0; overflow:hidden; }
+  .line-wrap { height:120px; position:relative; }
+  .line-wrap svg { width:100%; height:100%; display:block; }
+  .line-now { position:absolute; right:2px; top:2px; font-family:"Chakra Petch",sans-serif;
+    font-weight:700; font-size:17px; color:var(--ink); }
+  .hb-row { display:flex; align-items:center; gap:3px; margin-bottom:4px; min-width:400px; }
+  .hb-row .n { width:132px; flex:none; font-size:12px; color:var(--ink-2); white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .hb-row i { flex:1; height:16px; border-radius:4px; background:var(--surface-2); display:block; }
   .hb-row i.on { background:var(--teal); }
-  .hb-row i.today { outline:2px solid var(--accent); outline-offset:1px; }
+  .hb-row i.today { box-shadow:inset 0 0 0 1.5px var(--accent); }
+  .hb-head { display:flex; gap:3px; min-width:400px; margin-bottom:6px; }
+  .hb-head .n { width:132px; flex:none; }
+  .hb-head span { flex:1; text-align:center; font-family:"Chakra Petch",sans-serif; font-size:9px;
+    color:var(--ink-3); }
   .pr { display:flex; align-items:baseline; gap:10px; background:var(--surface); border:1px solid var(--line);
     border-radius:14px; padding:10px 14px; margin-bottom:6px; }
   .pr .n { flex:1; font-size:13.5px; color:var(--ink-2); }
@@ -230,7 +249,7 @@
       <div id="invHave"></div>
       <h2><b>Setup</b> <span id="bossProgress"></span></h2>
       <div id="bossList"></div>
-      <p class="muted" style="margin-top:16px">v2.4 · <a href="#" onclick="logout()">sair</a></p>
+      <p class="muted" style="margin-top:16px">v2.5 · <a href="#" onclick="logout()">sair</a></p>
     </div>
   </div>
 </div>
@@ -583,50 +602,42 @@ async function saveWeight() {
 
 /* ---------- gráficos (SVG puro) ---------- */
 function barChart(el, data, opts) {
-  // data: [{label, value, hot}]
-  const W = 320, H = 110, pad = 2;
   const mx = Math.max(...data.map(d => d.value), opts.min || 1);
-  const bw = W / Math.max(data.length, 1);
-  let svg = "<svg viewBox='0 0 " + W + " " + (H + 16) + "' style='width:100%;height:auto'>";
-  data.forEach((d, i) => {
-    const h = Math.max(2, Math.round(H * d.value / mx));
-    const x = i * bw + pad, y = H - h;
-    svg += "<rect x='" + x + "' y='" + y + "' width='" + (bw - pad * 2) + "' height='" + h +
-      "' rx='3' fill='" + (d.hot ? opts.color : "color-mix(in srgb," + opts.color + " 42%,transparent)") + "'></rect>";
-    if (d.value > 0 && (opts.showVals || d.hot)) {
-      svg += "<text x='" + (x + (bw - pad*2)/2) + "' y='" + (y - 3) + "' text-anchor='middle' font-size='9' " +
-        "fill='var(--ink-3)' font-family='Chakra Petch'>" + (opts.fmt ? opts.fmt(d.value) : d.value) + "</text>";
-    }
+  let h = "<div class='bars'>";
+  data.forEach(d => {
+    const pct = Math.max(2, Math.round(100 * d.value / mx));
+    const col = d.hot ? opts.color : "color-mix(in srgb," + opts.color + " 38%,transparent)";
+    h += "<div class='bar-col" + (d.hot ? " hot" : "") + "'>" +
+         "<span class='bar-v'>" + (d.value ? (opts.fmt ? opts.fmt(d.value) : d.value) : "") + "</span>" +
+         "<span class='bar-r' style='height:" + pct + "%;background:" + col + "'></span></div>";
   });
-  svg += "</svg>";
-  el.innerHTML = svg + "<div class='chart-lbl'><span>" + (data[0] ? data[0].label : "") +
-    "</span><span>" + (data.length > 1 ? data[data.length-1].label : "") + "</span></div>";
+  h += "</div><div class='bar-x'>" + data.map((d, i) =>
+    "<span>" + (data.length <= 8 || i % 3 === 0 || i === data.length - 1 ? d.label : "") + "</span>").join("") + "</div>";
+  el.innerHTML = h;
 }
 function lineChart(el, pts, opts) {
   if (pts.length < 2) {
-    el.innerHTML = "<p class='muted' style='margin:6px 2px'>" + (opts.empty || "precisa de mais medidas") + "</p>";
+    el.innerHTML = "<p class='muted' style='margin:4px 2px'>" + (opts.empty || "precisa de mais medidas") + "</p>";
     return;
   }
-  const W = 320, H = 100;
+  const W = 300, H = 100;
   const vals = pts.map(p => p.value);
   const lo = Math.min(...vals), hi = Math.max(...vals), rng = (hi - lo) || 1;
-  const X = i => (i / (pts.length - 1)) * (W - 8) + 4;
-  const Y = v => H - 10 - ((v - lo) / rng) * (H - 26);
-  let d = "", area = "";
+  const X = i => 4 + (i / (pts.length - 1)) * (W - 8);
+  const Y = v => H - 12 - ((v - lo) / rng) * (H - 30);
+  let d = "";
   pts.forEach((p, i) => { d += (i ? " L" : "M") + X(i).toFixed(1) + " " + Y(p.value).toFixed(1); });
-  area = d + " L" + X(pts.length-1).toFixed(1) + " " + H + " L" + X(0).toFixed(1) + " " + H + " Z";
-  let svg = "<svg viewBox='0 0 " + W + " " + (H + 14) + "' style='width:100%;height:auto'>";
-  svg += "<path d='" + area + "' fill='color-mix(in srgb," + opts.color + " 14%,transparent)'></path>";
-  svg += "<path d='" + d + "' fill='none' stroke='" + opts.color + "' stroke-width='2' stroke-linejoin='round'></path>";
+  const area = d + " L" + X(pts.length-1).toFixed(1) + " " + H + " L" + X(0).toFixed(1) + " " + H + " Z";
   const last = pts.length - 1;
-  svg += "<circle cx='" + X(last).toFixed(1) + "' cy='" + Y(pts[last].value).toFixed(1) + "' r='4' fill='" + opts.color + "'></circle>";
-  svg += "<text x='" + (X(last) - 6).toFixed(1) + "' y='" + (Y(pts[last].value) - 8).toFixed(1) +
-    "' text-anchor='end' font-size='11' font-weight='700' fill='var(--ink)' font-family='Chakra Petch'>" +
-    (opts.fmt ? opts.fmt(pts[last].value) : pts[last].value) + "</text>";
-  svg += "</svg>";
-  el.innerHTML = svg + "<div class='chart-lbl'><span>" + pts[0].label + "</span><span>" + pts[last].label + "</span></div>";
+  let svg = "<svg viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='none'>" +
+    "<path d='" + area + "' fill='color-mix(in srgb," + opts.color + " 13%,transparent)'/>" +
+    "<path d='" + d + "' fill='none' stroke='" + opts.color + "' stroke-width='2.5' " +
+    "vector-effect='non-scaling-stroke' stroke-linejoin='round' stroke-linecap='round'/>" +
+    "<circle cx='" + X(last).toFixed(1) + "' cy='" + Y(pts[last].value).toFixed(1) + "' r='3.5' fill='" + opts.color + "'/></svg>";
+  el.innerHTML = "<div class='line-wrap'>" + svg +
+    "<span class='line-now'>" + (opts.fmt ? opts.fmt(pts[last].value) : pts[last].value) + "</span></div>" +
+    "<div class='chart-lbl'><span>" + pts[0].label + "</span><span>" + pts[last].label + "</span></div>";
 }
-
 async function loadProgress() {
   try {
     const [w, hd, dc, prs, sc] = await Promise.all([
@@ -681,12 +692,18 @@ async function loadProgress() {
 
     // hábitos 14d
     const hb = document.getElementById("chHabits"); hb.innerHTML = "";
+    const DOW = ["D","S","T","Q","Q","S","S"];
     const days14 = []; for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i);
       days14.push(iso(new Date(d.getTime() - d.getTimezoneOffset()*60000))); }
     const chk = {}; dc.forEach(c => { chk[c.date+"|"+c.mission_key] = c.done; });
+    const head = document.createElement("div"); head.className = "hb-head";
+    head.innerHTML = "<span class='n'></span>" + days14.map(d =>
+      "<span>" + DOW[new Date(d + "T12:00:00").getDay()] + "</span>").join("");
+    hb.appendChild(head);
     missions.filter(m => m.kind === "daily").forEach(m => {
       const row = document.createElement("div"); row.className = "hb-row";
-      row.innerHTML = "<span class='n'>" + m.label.replace(/[^\p{L}\p{N} ].*/u,"").trim().slice(0,14) + "</span>" +
+      const nome = m.label.replace(/^[^\p{L}]+/u, "").split("(")[0].trim();
+      row.innerHTML = "<span class='n'>" + nome + "</span>" +
         days14.map(d => "<i class='" + (chk[d+"|"+m.key] ? "on " : "") + (d===t ? "today" : "") + "'></i>").join("");
       hb.appendChild(row);
     });
