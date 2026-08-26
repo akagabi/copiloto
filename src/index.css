@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme static {
+  --font-display: "Chakra Petch", ui-sans-serif, system-ui;
+  --font-sans: "Archivo", ui-sans-serif, system-ui;
+
+  --color-bg: #F3F3F0;
+  --color-card: #FFFFFF;
+  --color-raise: #FAFAF8;
+  --color-surface2: #E8E9E5;
+  --color-fg: #16181B;
+  --color-fg2: #4B5158;
+  --color-muted: #7C838B;
+  --color-border: #DBDDD8;
+  --color-primary: #C43B2E;
+  --color-amber: #B5821D;
+  --color-amber-dim: #B5821D66;
+  --color-emerald: #00806B;
+  --color-emerald-dim: #00806B66;
+  --color-sky: #2F5FA8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #111318;
+    --color-card: #1A1D22;
+    --color-raise: #20242B;
+    --color-surface2: #22262C;
+    --color-fg: #ECEDEE;
+    --color-fg2: #ABB2B8;
+    --color-muted: #7A828B;
+    --color-border: #2C3138;
+    --color-primary: #E56A58;
+    --color-amber: #C79437;
+    --color-amber-dim: #C7943766;
+    --color-emerald: #2FB093;
+    --color-emerald-dim: #2FB09366;
+    --color-sky: #6E9BE0;
+  }
+}
+
+html { background: var(--color-bg); }
+body { margin: 0; background: var(--color-bg); color: var(--color-fg);
+  font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+* { -webkit-tap-highlight-color: transparent; }
